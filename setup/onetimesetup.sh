@@ -1,8 +1,4 @@
 #!/bin/bash
-set -e
-LOG="/var/log/bridgebox-setup.log"
-FLAG="/etc/bridgebox/setup_done"
-#!/bin/bash
 # One-time setup script for BridgeBox (safer + idempotent + dry-run)
 # Usage: onetimesetup.sh [--dry-run] [--no-reboot]
 
