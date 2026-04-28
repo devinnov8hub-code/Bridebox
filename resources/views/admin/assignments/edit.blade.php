@@ -1,28 +1,28 @@
 @extends('admin.layout')
 
-@section('title', 'Edit Assignment')
+@section('title', __('Edit Assignment'))
 
 @section('main')
     <main class="main">
         <header class="topbar">
             <div class="greeting">
-                <p class="eyebrow">Admin</p>
-                <h1>Edit Assignment</h1>
-                <p class="subtext">Update assignment details.</p>
+                <p class="eyebrow">{{ __('Admin') }}</p>
+                <h1>{{ __('Edit Assignment') }}</h1>
+                <p class="subtext">{{ __('Update assignment details.') }}</p>
             </div>
             <div class="actions">
-                <a class="btn ghost" href="{{ route('admin.assignments.index') }}">Back to Assignments</a>
+                <a class="btn ghost" href="{{ route('admin.assignments.index') }}">{{ __('Back to Assignments') }}</a>
                 <form action="{{ route('logout') }}" method="post">
                     @csrf
-                    <button class="btn primary" type="submit">Logout</button>
+                    <button class="btn primary" type="submit">{{ __('Logout') }}</button>
                 </form>
             </div>
         </header>
 
         <section class="panel">
             <div class="panel-header">
-                <h4>Assignment Details</h4>
-                <span class="badge gold">Required</span>
+                <h4>{{ __('Assignment Details') }}</h4>
+                <span class="badge gold">{{ __('Required') }}</span>
             </div>
             <div class="panel-body">
                 @php
@@ -35,7 +35,7 @@
                     @csrf
                     @method('put')
                     <div class="form-field">
-                        <label for="title">Title</label>
+                        <label for="title">{{ __('Title') }}</label>
                         <input id="title" name="title" type="text" value="{{ old('title', $assignment->title) }}" required>
                         @error('title')
                             <span class="form-error">{{ $message }}</span>
@@ -43,9 +43,9 @@
                     </div>
 
                     <div class="form-field">
-                        <label for="school_class_id">Class</label>
+                        <label for="school_class_id">{{ __('Class') }}</label>
                         <select id="school_class_id" name="school_class_id" required>
-                            <option value="" disabled @selected(!$selectedClassId)>Select a class</option>
+                            <option value="" disabled @selected(!$selectedClassId)>{{ __('Select a class') }}</option>
                             @foreach ($classes as $class)
                                 <option value="{{ $class->id }}" @selected($selectedClassId == $class->id)>{{ $class->name }}</option>
                             @endforeach
@@ -56,9 +56,9 @@
                     </div>
 
                     <div class="form-field">
-                        <label for="subject_id">Subject</label>
+                        <label for="subject_id">{{ __('Subject') }}</label>
                         <select id="subject_id" name="subject_id" required data-subjects-url="{{ route('admin.subjects.by-class') }}" data-selected-subject="{{ $selectedSubjectId }}">
-                            <option value="" disabled @selected(!$selectedSubjectId)>Select a class first</option>
+                            <option value="" disabled @selected(!$selectedSubjectId)>{{ __('Select a class first') }}</option>
                         </select>
                         @error('subject_id')
                             <span class="form-error">{{ $message }}</span>
@@ -66,9 +66,9 @@
                     </div>
 
                     <div class="form-field">
-                        <label for="topic_id">Topic</label>
+                        <label for="topic_id">{{ __('Topic') }}</label>
                         <select id="topic_id" name="topic_id" required data-topics-url="{{ route('admin.topics.by-subject') }}" data-selected-topic="{{ $selectedTopicId }}">
-                            <option value="" disabled @selected(!$selectedTopicId)>Select a subject first</option>
+                            <option value="" disabled @selected(!$selectedTopicId)>{{ __('Select a subject first') }}</option>
                         </select>
                         @error('topic_id')
                             <span class="form-error">{{ $message }}</span>
@@ -76,9 +76,9 @@
                     </div>
 
                     <div class="form-field">
-                        <label for="lesson_id">Lesson</label>
+                        <label for="lesson_id">{{ __('Lesson') }}</label>
                         <select id="lesson_id" name="lesson_id" required data-lessons-url="{{ route('admin.topics.lessons.by-topic') }}" data-selected-lesson="{{ $selectedLessonId }}">
-                            <option value="" disabled @selected(!$selectedLessonId)>Select a topic first</option>
+                            <option value="" disabled @selected(!$selectedLessonId)>{{ __('Select a topic first') }}</option>
                             @foreach ($lessons as $lesson)
                                 <option value="{{ $lesson->id }}" @selected($selectedLessonId == $lesson->id)>{{ $lesson->title }}</option>
                             @endforeach
@@ -89,7 +89,7 @@
                     </div>
 
                     <div class="form-field">
-                        <label for="due_at">Deadline</label>
+                        <label for="due_at">{{ __('Deadline') }}</label>
                         <input id="due_at" name="due_at" type="datetime-local" value="{{ old('due_at', $assignment->due_at?->format('Y-m-d\TH:i')) }}" required>
                         @error('due_at')
                             <span class="form-error">{{ $message }}</span>
@@ -97,7 +97,7 @@
                     </div>
 
                     <div class="form-field">
-                        <label for="max_points">Total Mark</label>
+                        <label for="max_points">{{ __('Total Mark') }}</label>
                         <input id="max_points" name="max_points" type="number" min="1" max="1000" value="{{ old('max_points', $assignment->max_points) }}" required>
                         @error('max_points')
                             <span class="form-error">{{ $message }}</span>
@@ -105,7 +105,7 @@
                     </div>
 
                     <div class="form-field">
-                        <label for="pass_mark">Pass Mark</label>
+                        <label for="pass_mark">{{ __('Pass Mark') }}</label>
                         <input id="pass_mark" name="pass_mark" type="number" min="0" max="1000" value="{{ old('pass_mark', $assignment->pass_mark) }}" required>
                         @error('pass_mark')
                             <span class="form-error">{{ $message }}</span>
@@ -113,7 +113,7 @@
                     </div>
 
                     <div class="form-field">
-                        <label for="retake_attempts">Retake attempts</label>
+                        <label for="retake_attempts">{{ __('Retake attempts') }}</label>
                         <input id="retake_attempts" name="retake_attempts" type="number" min="0" max="100" value="{{ old('retake_attempts', $assignment->retake_attempts) }}" required>
                         @error('retake_attempts')
                             <span class="form-error">{{ $message }}</span>
@@ -123,12 +123,12 @@
                     <div class="form-field form-field-full">
                         <label class="checkbox">
                             <input type="checkbox" name="allow_late" value="1" {{ old('allow_late', $assignment->allow_late) ? 'checked' : '' }}>
-                            <span>Allow late submission</span>
+                            <span>{{ __('Allow late submission') }}</span>
                         </label>
                     </div>
 
                     <div class="form-field" data-late-fields>
-                        <label for="late_mark">Late submission mark</label>
+                        <label for="late_mark">{{ __('Late submission mark') }}</label>
                         <input id="late_mark" name="late_mark" type="number" min="0" max="1000" value="{{ old('late_mark', $assignment->late_mark) }}">
                         @error('late_mark')
                             <span class="form-error">{{ $message }}</span>
@@ -136,7 +136,7 @@
                     </div>
 
                     <div class="form-field" data-late-fields>
-                        <label for="late_due_at">Late submission deadline</label>
+                        <label for="late_due_at">{{ __('Late submission deadline') }}</label>
                         <input id="late_due_at" name="late_due_at" type="datetime-local" value="{{ old('late_due_at', $assignment->late_due_at?->format('Y-m-d\TH:i')) }}">
                         @error('late_due_at')
                             <span class="form-error">{{ $message }}</span>
@@ -144,7 +144,7 @@
                     </div>
 
                     <div class="form-field form-field-full">
-                        <label for="description">Assignment description</label>
+                        <label for="description">{{ __('Assignment description') }}</label>
                         <textarea id="description" name="description" required>{{ old('description', $assignment->description) }}</textarea>
                         @error('description')
                             <span class="form-error">{{ $message }}</span>
@@ -152,7 +152,7 @@
                     </div>
 
                     <div class="form-actions">
-                        <button class="btn primary" type="submit">Save Changes</button>
+                        <button class="btn primary" type="submit">{{ __('Save Changes') }}</button>
                     </div>
                 </form>
             </div>

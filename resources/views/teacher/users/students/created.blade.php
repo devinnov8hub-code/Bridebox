@@ -6,23 +6,23 @@
     <main class="main">
         <header class="topbar">
             <div class="greeting">
-                <p class="eyebrow">Teacher</p>
-                <h1>Student Created</h1>
-                <p class="subtext">The student account has been created successfully.</p>
+                <p class="eyebrow">{{ __('Teacher') }}</p>
+                <h1>{{ __('Student Created') }}</h1>
+                <p class="subtext">{{ __('The student account has been created successfully.') }}</p>
             </div>
             <div class="actions">
-                <a class="btn ghost" href="{{ route('teacher.students.index') }}">Back to Students</a>
+                <a class="btn ghost" href="{{ route('teacher.students.index') }}">{{ __('Back to Students') }}</a>
                 <form action="{{ route('logout') }}" method="post">
                     @csrf
-                    <button class="btn primary" type="submit">Logout</button>
+                    <button class="btn primary" type="submit">{{ __('Logout') }}</button>
                 </form>
             </div>
         </header>
 
         <section class="panel">
             <div class="panel-header">
-                <h4>Account Summary</h4>
-                <span class="badge blue">New</span>
+                <h4>{{ __('Account Summary') }}</h4>
+                <span class="badge blue">{{ __('New') }}</span>
             </div>
             <div class="panel-body">
                 <div class="item">
@@ -36,7 +36,7 @@
                 @if ($className)
                     <div class="item">
                         <div class="item-info">
-                            <p>Class</p>
+                            <p>{{ __('Class') }}</p>
                             <span>{{ $className }}</span>
                         </div>
                     </div>
@@ -44,7 +44,7 @@
                 @if ($profile?->department)
                     <div class="item">
                         <div class="item-info">
-                            <p>Department</p>
+                            <p>{{ __('Department') }}</p>
                             <span>{{ $profile->department }}</span>
                         </div>
                     </div>
@@ -52,7 +52,7 @@
                 @if ($profile?->admission_id)
                     <div class="item">
                         <div class="item-info">
-                            <p>Admission ID</p>
+                            <p>{{ __('Admission ID') }}</p>
                             <span>{{ $profile->admission_id }}</span>
                         </div>
                     </div>
@@ -61,17 +61,17 @@
                 @if ($passwordMode === 'auto' && $generatedPassword)
                     <div class="item">
                         <div class="item-info">
-                            <p>Generated Password</p>
-                            <span class="password-note">Shown once. Copy and share securely.</span>
+                            <p>{{ __('Generated Password') }}</p>
+                            <span class="password-note">{{ __('Shown once. Copy and share securely.') }}</span>
                         </div>
                         <div class="password-box" data-copy-target>{{ $generatedPassword }}</div>
-                        <button class="btn ghost btn-small" type="button" data-copy-button>Copy</button>
+                        <button class="btn ghost btn-small" type="button" data-copy-button>{{ __('Copy') }}</button>
                     </div>
                 @else
                     <div class="item">
                         <div class="item-info">
-                            <p>Password</p>
-                            <span>Set manually during creation.</span>
+                            <p>{{ __('Password') }}</p>
+                            <span>{{ __('Set manually during creation.') }}</span>
                         </div>
                     </div>
                 @endif

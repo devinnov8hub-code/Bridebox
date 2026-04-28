@@ -18,32 +18,32 @@
 
         <section class="screen role" id="role" aria-label="Role selection">
             <div class="role-panel">
-                <p class="eyebrow">BridgeBox Access</p>
-                <h1>What do you want to login as</h1>
-                <p class="subtext">Choose a role to continue to your secure workspace.</p>
+                <p class="eyebrow">{{ __('BridgeBox Access') }}</p>
+                <h1>{{ __('What do you want to login as') }}</h1>
+                <p class="subtext">{{ __('Choose a role to continue to your secure workspace.') }}</p>
 
                 <div class="role-options">
                     <a class="role-option admin" href="{{ route('login', ['role' => 'admin']) }}">
                         <div class="role-icon">A</div>
                         <div class="role-text">
-                            <span class="role-title">Admin</span>
-                            <span class="role-sub">Manage access and oversight</span>
+                            <span class="role-title">{{ __('Admin') }}</span>
+                            <span class="role-sub">{{ __('Manage access and oversight') }}</span>
                         </div>
                         <span class="role-arrow">→</span>
                     </a>
                     <a class="role-option teacher" href="{{ route('login', ['role' => 'teacher']) }}">
                         <div class="role-icon">T</div>
                         <div class="role-text">
-                            <span class="role-title">Teacher</span>
-                            <span class="role-sub">Prepare lessons and share</span>
+                            <span class="role-title">{{ __('Teacher') }}</span>
+                            <span class="role-sub">{{ __('Prepare lessons and share') }}</span>
                         </div>
                         <span class="role-arrow">→</span>
                     </a>
                     <a class="role-option student" href="{{ route('login', ['role' => 'student']) }}">
                         <div class="role-icon">S</div>
                         <div class="role-text">
-                            <span class="role-title">Student</span>
-                            <span class="role-sub">Explore content and learn</span>
+                            <span class="role-title">{{ __('Student') }}</span>
+                            <span class="role-sub">{{ __('Explore content and learn') }}</span>
                         </div>
                         <span class="role-arrow">→</span>
                     </a>

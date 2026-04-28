@@ -6,15 +6,15 @@
     <main class="main">
         <header class="topbar">
             <div class="greeting">
-                <p class="eyebrow">Teacher Student Progress</p>
+                <p class="eyebrow">{{ __('Teacher Student Progress') }}</p>
                 <h1>{{ $student->name }}</h1>
                 <p class="subtext">Class: {{ $student->schoolClass?->name ?? '-' }} | Department: {{ $student->studentProfile?->department ?? '-' }}</p>
             </div>
             <div class="actions">
-                <a class="btn ghost" href="{{ route('teacher.students.index') }}">Back to Students</a>
+                <a class="btn ghost" href="{{ route('teacher.students.index') }}">{{ __('Back to Students') }}</a>
                 <form action="{{ route('logout') }}" method="post">
                     @csrf
-                    <button class="btn primary" type="submit">Logout</button>
+                    <button class="btn primary" type="submit">{{ __('Logout') }}</button>
                 </form>
             </div>
         </header>

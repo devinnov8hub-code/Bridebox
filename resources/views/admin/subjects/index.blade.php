@@ -1,21 +1,21 @@
 @extends('admin.layout')
 
-@section('title', 'Subjects')
+@section('title', __('Subjects'))
 
 @section('main')
     <main class="main">
         <header class="topbar">
             <div class="greeting">
-                <p class="eyebrow">Admin</p>
-                <h1>Subjects</h1>
-                <p class="subtext">Create and manage subjects in the system.</p>
+                <p class="eyebrow">{{ __('Admin') }}</p>
+                <h1>{{ __('Subjects') }}</h1>
+                <p class="subtext">{{ __('Create and manage subjects in the system.') }}</p>
             </div>
             <div class="actions">
-                <a class="btn primary" href="{{ route('admin.subjects.create') }}">Add Subject</a>
-                <a class="btn ghost" href="{{ route('dashboard.admin') }}">Back to Dashboard</a>
+                <a class="btn primary" href="{{ route('admin.subjects.create') }}">{{ __('Add Subject') }}</a>
+                <a class="btn ghost" href="{{ route('dashboard.admin') }}">{{ __('Back to Dashboard') }}</a>
                 <form action="{{ route('logout') }}" method="post">
                     @csrf
-                    <button class="btn primary" type="submit">Logout</button>
+                    <button class="btn primary" type="submit">{{ __('Logout') }}</button>
                 </form>
             </div>
         </header>
@@ -23,29 +23,29 @@
         @if (session('message'))
             <div class="alert alert-dismissible {{ session('status') === 'success' ? 'alert-success' : 'alert-error' }}" role="status" data-auto-dismiss="4000">
                 <span data-alert-message>{{ session('message') }}</span>
-                <button class="alert-close" type="button" data-alert-close data-bs-dismiss="alert" aria-label="Dismiss alert">&times;</button>
+                <button class="alert-close" type="button" data-alert-close data-bs-dismiss="alert" aria-label="{{ __('Dismiss alert') }}">&times;</button>
             </div>
         @endif
 
         <section class="panel table-panel">
             <div class="panel-header">
-                <h4>Subjects List</h4>
+                <h4>{{ __('Subjects List') }}</h4>
                 <span class="badge blue">{{ $subjects->total() }}</span>
             </div>
             <div class="panel-body">
                 <div class="table-toolbar">
                     @php($hasFilters = $search || $selectedSectionId)
                     <form class="search-form" method="get" action="{{ route('admin.subjects.index') }}">
-                        <input class="search-input" type="text" name="q" placeholder="Search by name or code" value="{{ $search }}">
+                        <input class="search-input" type="text" name="q" placeholder="{{ __('Search by name or code') }}" value="{{ $search }}">
                         <select class="search-input" name="section_id">
-                            <option value="" @selected(!$selectedSectionId)>All sections</option>
+                            <option value="" @selected(!$selectedSectionId)>{{ __('All sections') }}</option>
                             @foreach ($sections as $section)
                                 <option value="{{ $section->id }}" @selected($selectedSectionId == $section->id)>{{ $section->name }}</option>
                             @endforeach
                         </select>
-                        <button class="btn ghost btn-small" type="submit">Search</button>
+                        <button class="btn ghost btn-small" type="submit">{{ __('Search') }}</button>
                         @if ($hasFilters)
-                            <a class="btn ghost btn-small" href="{{ route('admin.subjects.index') }}">Clear</a>
+                            <a class="btn ghost btn-small" href="{{ route('admin.subjects.index') }}">{{ __('Clear') }}</a>
                         @endif
                     </form>
                     <span class="text-muted">Showing {{ $subjects->count() }} of {{ $subjects->total() }}</span>
@@ -55,12 +55,12 @@
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>Name</th>
-                                <th>Slug</th>
-                                <th>Section</th>
-                                <th>Description</th>
-                                <th>Created</th>
-                                <th>Actions</th>
+                                <th>{{ __('Name') }}</th>
+                                <th>{{ __('Slug') }}</th>
+                                <th>{{ __('Section') }}</th>
+                                <th>{{ __('Description') }}</th>
+                                <th>{{ __('Created') }}</th>
+                                <th>{{ __('Actions') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -73,18 +73,18 @@
                                     <td>{{ $subject->created_at?->format('Y-m-d') ?? '-' }}</td>
                                     <td>
                                         <div class="table-actions">
-                                            <a class="btn ghost btn-small" href="{{ route('admin.subjects.edit', $subject) }}">Edit</a>
-                                            <form method="post" action="{{ route('admin.subjects.delete', $subject) }}" data-confirm="Delete this subject?" style="display:inline-block;">
+                                            <a class="btn ghost btn-small" href="{{ route('admin.subjects.edit', $subject) }}">{{ __('Edit') }}</a>
+                                            <form method="post" action="{{ route('admin.subjects.delete', $subject) }}" data-confirm="{{ __('Delete this subject?') }}" style="display:inline-block;">
                                                 @csrf
                                                 @method('delete')
-                                                <button class="btn ghost btn-small" type="submit">Delete</button>
+                                                <button class="btn ghost btn-small" type="submit">{{ __('Delete') }}</button>
                                             </form>
                                         </div>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td class="table-empty" colspan="6">No subjects found.</td>
+                                    <td class="table-empty" colspan="6">{{ __('No subjects found.') }}</td>
                                 </tr>
                             @endforelse
                         </tbody>

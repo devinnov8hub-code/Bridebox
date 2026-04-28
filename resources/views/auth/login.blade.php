@@ -28,17 +28,17 @@
                 <form class="login-form" id="login-form" action="{{ route('login.submit', ['role' => $roleKey]) }}" method="post">
                     @csrf
                     <div class="field">
-                        <label for="email">Email or username</label>
-                        <input id="email" name="identifier" type="text" placeholder="name@school.edu" autocomplete="username" value="{{ old('identifier') }}">
+                        <label for="email">{{ __('Email or username') }}</label>
+                        <input id="email" name="identifier" type="text" placeholder="{{ __('name@school.edu') }}" autocomplete="username" value="{{ old('identifier') }}">
                     </div>
 
                     <div class="field">
-                        <label for="password">Password</label>
-                        <input id="password" name="password" type="password" placeholder="Enter your password" autocomplete="current-password">
+                        <label for="password">{{ __('Password') }}</label>
+                        <input id="password" name="password" type="password" placeholder="{{ __('Enter your password') }}" autocomplete="current-password">
                     </div>
 
-                    <button class="btn primary" type="submit">Login</button>
-                    <button class="forgot-link" type="button" data-modal-open="forgot-modal">Forgot password?</button>
+                    <button class="btn primary" type="submit">{{ __('Login') }}</button>
+                    <button class="forgot-link" type="button" data-modal-open="forgot-modal">{{ __('Forgot password?') }}</button>
                 </form>
             </div>
         </section>
@@ -47,16 +47,16 @@
     <div class="modal" id="forgot-modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="forgot-title">
         <div class="modal-card">
             <div class="modal-header">
-                <h2 id="forgot-title">Offline Password Help</h2>
-                <button class="icon-close" type="button" data-modal-close="forgot-modal" aria-label="Close dialog">×</button>
+                <h2 id="forgot-title">{{ __('Offline Password Help') }}</h2>
+                <button class="icon-close" type="button" data-modal-close="forgot-modal" aria-label="{{ __('Close dialog') }}">×</button>
             </div>
-            <p>BridgeBox is designed to work offline, so password resets happen locally.</p>
+            <p>{{ __('BridgeBox is designed to work offline, so password resets happen locally.') }}</p>
             <ul class="modal-list">
-                <li>Ask your school admin for a local reset code.</li>
-                <li>If you are an admin, use the device settings panel to issue a reset.</li>
-                <li>If neither is available, wait until connectivity returns to sync a reset.</li>
+                <li>{{ __('Ask your school admin for a local reset code.') }}</li>
+                <li>{{ __('If you are an admin, use the device settings panel to issue a reset.') }}</li>
+                <li>{{ __('If neither is available, wait until connectivity returns to sync a reset.') }}</li>
             </ul>
-            <button class="btn primary" type="button" data-modal-close="forgot-modal">Got it</button>
+            <button class="btn primary" type="button" data-modal-close="forgot-modal">{{ __('Got it') }}</button>
         </div>
     </div>
 

@@ -8,20 +8,20 @@
     <main class="main">
         <header class="topbar">
             <div class="greeting">
-                <p class="eyebrow">Admin User Management</p>
+                <p class="eyebrow">{{ __('Admin User Management') }}</p>
                 <h1>{{ $title }}</h1>
-                <p class="subtext">This section is ready for user management in the next milestones.</p>
+                <p class="subtext">{{ __('This section is ready for user management in the next milestones.') }}</p>
             </div>
             <div class="actions">
                 @if ($section === 'teachers')
-                    <a class="btn primary" href="{{ route('admin.users.teachers.create') }}">Add Teacher</a>
+                    <a class="btn primary" href="{{ route('admin.users.teachers.create') }}">{{ __('Add Teacher') }}</a>
                 @elseif ($section === 'students')
-                    <a class="btn primary" href="{{ route('admin.users.students.create') }}">Add Student</a>
+                    <a class="btn primary" href="{{ route('admin.users.students.create') }}">{{ __('Add Student') }}</a>
                 @endif
-                <a class="btn ghost" href="{{ route('dashboard.admin') }}">Back to Dashboard</a>
+                <a class="btn ghost" href="{{ route('dashboard.admin') }}">{{ __('Back to Dashboard') }}</a>
                 <form action="{{ route('logout') }}" method="post">
                     @csrf
-                    <button class="btn primary" type="submit">Logout</button>
+                    <button class="btn primary" type="submit">{{ __('Logout') }}</button>
                 </form>
             </div>
         </header>
@@ -29,13 +29,13 @@
         <section class="panel">
             <div class="panel-header">
                 <h4>{{ $title }} Management</h4>
-                <span class="badge gold">Coming Soon</span>
+                <span class="badge gold">{{ __('Coming Soon') }}</span>
             </div>
             <div class="panel-body">
                 <div class="item">
                     <div class="item-info">
-                        <p>Placeholder</p>
-                        <span>Creation, search, and actions will appear here.</span>
+                        <p>{{ __('Placeholder') }}</p>
+                        <span>{{ __('Creation, search, and actions will appear here.') }}</span>
                     </div>
                 </div>
             </div>

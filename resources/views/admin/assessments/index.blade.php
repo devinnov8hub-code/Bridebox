@@ -7,21 +7,21 @@
     <main class="main">
         <header class="topbar">
             <div class="greeting">
-                <p class="eyebrow">Admin</p>
+                <p class="eyebrow">{{ __('Admin') }}</p>
                 <h1>{{ ucfirst($type) }}s</h1>
                 <p class="subtext">Create and manage {{ $type }}s by class, subject, and topic.</p>
             </div>
             <div class="actions">
                 <a class="btn primary" href="{{ route($routePrefix . '.create') }}">Add {{ ucfirst($type) }}</a>
                 @php($exportQuery = request()->query())
-                <a class="btn ghost" href="{{ route($routePrefix . '.export', array_merge($exportQuery, ['format' => 'csv'])) }}">Export CSV</a>
-                <a class="btn ghost" href="{{ route($routePrefix . '.export', array_merge($exportQuery, ['format' => 'xlsx'])) }}">Export Excel</a>
-                <a class="btn ghost" href="{{ route($routePrefix . '.export', array_merge($exportQuery, ['format' => 'pdf'])) }}">Export PDF</a>
-                <a class="btn ghost" href="{{ route($routePrefix . '.attempts.index') }}">Results</a>
-                <a class="btn ghost" href="{{ route('dashboard.admin') }}">Back to Dashboard</a>
+                <a class="btn ghost" href="{{ route($routePrefix . '.export', array_merge($exportQuery, ['format' => 'csv'])) }}">{{ __('Export CSV') }}</a>
+                <a class="btn ghost" href="{{ route($routePrefix . '.export', array_merge($exportQuery, ['format' => 'xlsx'])) }}">{{ __('Export Excel') }}</a>
+                <a class="btn ghost" href="{{ route($routePrefix . '.export', array_merge($exportQuery, ['format' => 'pdf'])) }}">{{ __('Export PDF') }}</a>
+                <a class="btn ghost" href="{{ route($routePrefix . '.attempts.index') }}">{{ __('Results') }}</a>
+                <a class="btn ghost" href="{{ route('dashboard.admin') }}">{{ __('Back to Dashboard') }}</a>
                 <form action="{{ route('logout') }}" method="post">
                     @csrf
-                    <button class="btn primary" type="submit">Logout</button>
+                    <button class="btn primary" type="submit">{{ __('Logout') }}</button>
                 </form>
             </div>
         </header>
@@ -42,25 +42,25 @@
                 <div class="table-toolbar">
                     @php($hasFilters = $search || $selectedClassId || $selectedSubjectId || $selectedTopicId)
                     <form class="search-form" method="get" action="{{ route($routePrefix . '.index') }}">
-                        <input class="search-input" type="text" name="q" placeholder="Search by title" value="{{ $search }}">
+                        <input class="search-input" type="text" name="q" placeholder="{{ __('Search by title') }}" value="{{ $search }}">
                         <select class="search-input" name="class_id" id="class_id">
-                            <option value="" @selected(!$selectedClassId)>All classes</option>
+                            <option value="" @selected(!$selectedClassId)>{{ __('All classes') }}</option>
                             @foreach ($classes as $class)
                                 <option value="{{ $class->id }}" @selected($selectedClassId == $class->id)>{{ $class->name }}</option>
                             @endforeach
                         </select>
                         <select class="search-input" name="subject_id" id="subject_id" data-subjects-url="{{ route('admin.subjects.by-class') }}" data-selected-subject="{{ $selectedSubjectId }}">
-                            <option value="" @selected(!$selectedSubjectId)>All subjects</option>
+                            <option value="" @selected(!$selectedSubjectId)>{{ __('All subjects') }}</option>
                             @foreach ($subjects as $subject)
                                 <option value="{{ $subject->id }}" @selected($selectedSubjectId == $subject->id)>{{ $subject->name }}</option>
                             @endforeach
                         </select>
                         <select class="search-input" name="topic_id" id="topic_id" data-topics-url="{{ route('admin.topics.by-subject') }}" data-selected-topic="{{ $selectedTopicId }}">
-                            <option value="" @selected(!$selectedTopicId)>All topics</option>
+                            <option value="" @selected(!$selectedTopicId)>{{ __('All topics') }}</option>
                         </select>
-                        <button class="btn ghost btn-small" type="submit">Filter</button>
+                        <button class="btn ghost btn-small" type="submit">{{ __('Filter') }}</button>
                         @if ($hasFilters)
-                            <a class="btn ghost btn-small" href="{{ route($routePrefix . '.index') }}">Clear</a>
+                            <a class="btn ghost btn-small" href="{{ route($routePrefix . '.index') }}">{{ __('Clear') }}</a>
                         @endif
                     </form>
                     <span class="text-muted">Showing {{ $assessments->count() }} of {{ $assessments->total() }}</span>
@@ -71,12 +71,12 @@
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>Title</th>
-                                <th>Class</th>
-                                <th>Subject</th>
-                                <th>Topic</th>
-                                <th>Time</th>
-                                <th>Actions</th>
+                                <th>{{ __('Title') }}</th>
+                                <th>{{ __('Class') }}</th>
+                                <th>{{ __('Subject') }}</th>
+                                <th>{{ __('Topic') }}</th>
+                                <th>{{ __('Time') }}</th>
+                                <th>{{ __('Actions') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -90,13 +90,13 @@
                                     <td>{{ $assessment->time_limit_minutes ? $assessment->time_limit_minutes . ' min' : '-' }}</td>
                                     <td>
                                         <div class="table-actions">
-                                            <a class="btn ghost btn-small" href="{{ route($routePrefix . '.attempts.index', ['assessment_id' => $assessment->id]) }}">Results</a>
-                                            <a class="btn ghost btn-small" href="{{ route($routePrefix . '.questions.index', $assessment) }}">Questions</a>
-                                            <a class="btn ghost btn-small" href="{{ route($routePrefix . '.edit', $assessment) }}">Edit</a>
+                                            <a class="btn ghost btn-small" href="{{ route($routePrefix . '.attempts.index', ['assessment_id' => $assessment->id]) }}">{{ __('Results') }}</a>
+                                            <a class="btn ghost btn-small" href="{{ route($routePrefix . '.questions.index', $assessment) }}">{{ __('Questions') }}</a>
+                                            <a class="btn ghost btn-small" href="{{ route($routePrefix . '.edit', $assessment) }}">{{ __('Edit') }}</a>
                                             <form method="post" action="{{ route($routePrefix . '.delete', $assessment) }}" data-confirm="Delete this {{ $type }}?" style="display:inline-block;">
                                                 @csrf
                                                 @method('delete')
-                                                <button class="btn ghost btn-small" type="submit">Delete</button>
+                                                <button class="btn ghost btn-small" type="submit">{{ __('Delete') }}</button>
                                             </form>
                                         </div>
                                     </td>

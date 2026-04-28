@@ -1,6 +1,6 @@
 @extends('admin.layout')
 
-@section('title', 'Admin Logs')
+@section('title', __('Admin Logs'))
 
 @php
     $actionsEnabled = $actionsEnabled ?? false;
@@ -11,19 +11,19 @@
     <main class="main">
         <header class="topbar">
             <div class="greeting">
-                <p class="eyebrow">Admin</p>
-                <h1>Admin Logs</h1>
-                <p class="subtext">Review recent system actions and results.</p>
+                <p class="eyebrow">{{ __('Admin') }}</p>
+                <h1>{{ __('Admin Logs') }}</h1>
+                <p class="subtext">{{ __('Review recent system actions and results.') }}</p>
             </div>
             <div class="actions">
-                <form data-admin-action data-action-name="clear_logs" data-confirm="Clear all admin action logs?" action="{{ route('dashboard.admin.actions', ['action' => 'clear_logs']) }}" method="post">
+                <form data-admin-action data-action-name="clear_logs" data-confirm="{{ __('Clear all admin action logs?') }}" action="{{ route('dashboard.admin.actions', ['action' => 'clear_logs']) }}" method="post">
                     @csrf
-                    <button class="btn ghost" type="submit" @disabled($actionsDisabled)>Clear Logs</button>
+                    <button class="btn ghost" type="submit" @disabled($actionsDisabled)>{{ __('Clear Logs') }}</button>
                 </form>
-                <a class="btn ghost" href="{{ route('dashboard.admin') }}">Back to Dashboard</a>
+                <a class="btn ghost" href="{{ route('dashboard.admin') }}">{{ __('Back to Dashboard') }}</a>
                 <form action="{{ route('logout') }}" method="post">
                     @csrf
-                    <button class="btn primary" type="submit">Logout</button>
+                    <button class="btn primary" type="submit">{{ __('Logout') }}</button>
                 </form>
             </div>
         </header>
@@ -42,18 +42,18 @@
 
         <section class="panel table-panel">
             <div class="panel-header">
-                <h4>Action Logs</h4>
+                <h4>{{ __('Action Logs') }}</h4>
                 <span class="badge blue">{{ $logs->total() }}</span>
             </div>
             <div class="panel-body table-scroll">
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Time</th>
-                            <th>Admin</th>
-                            <th>Action</th>
-                            <th>Result</th>
-                            <th>Message</th>
+                            <th>{{ __('Time') }}</th>
+                            <th>{{ __('Admin') }}</th>
+                            <th>{{ __('Action') }}</th>
+                            <th>{{ __('Result') }}</th>
+                            <th>{{ __('Message') }}</th>
                         </tr>
                     </thead>
                     <tbody data-action-log-body>
@@ -67,7 +67,7 @@
                             </tr>
                         @empty
                             <tr data-action-log-empty>
-                                <td colspan="5">No actions logged yet.</td>
+                                <td colspan="5">{{ __('No actions logged yet.') }}</td>
                             </tr>
                         @endforelse
                     </tbody>

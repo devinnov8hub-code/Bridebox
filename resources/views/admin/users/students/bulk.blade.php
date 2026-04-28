@@ -6,16 +6,16 @@
     <main class="main">
         <header class="topbar">
             <div class="greeting">
-                <p class="eyebrow">Admin User Management</p>
-                <h1>Bulk Upload Students</h1>
-                <p class="subtext">Upload a CSV file to add students in one go.</p>
+                <p class="eyebrow">{{ __('Admin User Management') }}</p>
+                <h1>{{ __('Bulk Upload Students') }}</h1>
+                <p class="subtext">{{ __('Upload a CSV file to add students in one go.') }}</p>
             </div>
             <div class="actions">
-                <a class="btn ghost" href="{{ route('admin.users.students.index') }}">Back to Students</a>
-                <a class="btn ghost" href="{{ route('admin.users.students.create') }}">Add Single Student</a>
+                <a class="btn ghost" href="{{ route('admin.users.students.index') }}">{{ __('Back to Students') }}</a>
+                <a class="btn ghost" href="{{ route('admin.users.students.create') }}">{{ __('Add Single Student') }}</a>
                 <form action="{{ route('logout') }}" method="post">
                     @csrf
-                    <button class="btn primary" type="submit">Logout</button>
+                    <button class="btn primary" type="submit">{{ __('Logout') }}</button>
                 </form>
             </div>
         </header>
@@ -29,17 +29,17 @@
 
         <section class="panel">
             <div class="panel-header">
-                <h4>CSV Upload</h4>
-                <span class="badge gold">Required</span>
+                <h4>{{ __('CSV Upload') }}</h4>
+                <span class="badge gold">{{ __('Required') }}</span>
             </div>
             <div class="panel-body">
                 <div class="form-grid">
                     <div class="form-field form-field-full">
-                        <p class="subtext">Download the sample CSV, fill it with your students, then upload it here.</p>
+                        <p class="subtext">{{ __('Download the sample CSV, fill it with your students, then upload it here.') }}</p>
                         <div class="actions">
-                            <a class="btn ghost" href="{{ asset('assets/samples/students.csv') }}" download>Download Sample CSV</a>
-                            <a class="btn ghost" href="{{ route('admin.classes.index') }}">View Classes</a>
-                            <a class="btn ghost" href="{{ route('admin.departments.index') }}">View Departments</a>
+                            <a class="btn ghost" href="{{ asset('assets/samples/students.csv') }}" download>{{ __('Download Sample CSV') }}</a>
+                            <a class="btn ghost" href="{{ route('admin.classes.index') }}">{{ __('View Classes') }}</a>
+                            <a class="btn ghost" href="{{ route('admin.departments.index') }}">{{ __('View Departments') }}</a>
                         </div>
                     </div>
                     <div class="form-field form-field-full">
@@ -52,14 +52,14 @@
                 <form class="form-grid" action="{{ route('admin.users.students.bulk.store') }}" method="post" enctype="multipart/form-data">
                     @csrf
                     <div class="form-field">
-                        <label for="csv_file">CSV file</label>
+                        <label for="csv_file">{{ __('CSV file') }}</label>
                         <input id="csv_file" name="csv_file" type="file" accept=".csv,text/csv" required>
                         @error('csv_file')
                             <span class="form-error">{{ $message }}</span>
                         @enderror
                     </div>
                     <div class="form-actions">
-                        <button class="btn primary" type="submit">Upload Students</button>
+                        <button class="btn primary" type="submit">{{ __('Upload Students') }}</button>
                     </div>
                 </form>
             </div>
@@ -68,8 +68,8 @@
         @if (session('bulk_errors'))
             <section class="panel">
                 <div class="panel-header">
-                    <h4>Import Issues</h4>
-                    <span class="badge rose">Needs Attention</span>
+                    <h4>{{ __('Import Issues') }}</h4>
+                    <span class="badge rose">{{ __('Needs Attention') }}</span>
                 </div>
                 <div class="panel-body">
                     <ul class="list">
@@ -84,7 +84,7 @@
         @if (session('bulk_created'))
             <section class="panel table-panel">
                 <div class="panel-header">
-                    <h4>Created Students (Passwords shown once)</h4>
+                    <h4>{{ __('Created Students (Passwords shown once)') }}</h4>
                     <span class="badge blue">{{ count(session('bulk_created')) }}</span>
                 </div>
                 <div class="panel-body">
@@ -92,10 +92,10 @@
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Class</th>
-                                    <th>Password</th>
+                                    <th>{{ __('Name') }}</th>
+                                    <th>{{ __('Email') }}</th>
+                                    <th>{{ __('Class') }}</th>
+                                    <th>{{ __('Password') }}</th>
                                 </tr>
                             </thead>
                             <tbody>

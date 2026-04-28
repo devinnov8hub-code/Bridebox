@@ -6,17 +6,17 @@
     <main class="main">
         <header class="topbar">
             <div class="greeting">
-                <p class="eyebrow">Admin User Management</p>
-                <h1>Students</h1>
-                <p class="subtext">Search and manage students in the BridgeBox system.</p>
+                <p class="eyebrow">{{ __('Admin User Management') }}</p>
+                <h1>{{ __('Students') }}</h1>
+                <p class="subtext">{{ __('Search and manage students in the BridgeBox system.') }}</p>
             </div>
             <div class="actions">
-                <a class="btn primary" href="{{ route('admin.users.students.create') }}">Add Student</a>
-                <a class="btn ghost" href="{{ route('admin.users.students.bulk') }}">Bulk Upload</a>
-                <a class="btn ghost" href="{{ route('dashboard.admin') }}">Back to Dashboard</a>
+                <a class="btn primary" href="{{ route('admin.users.students.create') }}">{{ __('Add Student') }}</a>
+                <a class="btn ghost" href="{{ route('admin.users.students.bulk') }}">{{ __('Bulk Upload') }}</a>
+                <a class="btn ghost" href="{{ route('dashboard.admin') }}">{{ __('Back to Dashboard') }}</a>
                 <form action="{{ route('logout') }}" method="post">
                     @csrf
-                    <button class="btn primary" type="submit">Logout</button>
+                    <button class="btn primary" type="submit">{{ __('Logout') }}</button>
                 </form>
             </div>
         </header>
@@ -30,23 +30,23 @@
 
         <section class="panel table-panel">
             <div class="panel-header">
-                <h4>Students List</h4>
+                <h4>{{ __('Students List') }}</h4>
                 <span class="badge blue">{{ $students->total() }}</span>
             </div>
             <div class="panel-body">
                 <div class="table-toolbar">
                     @php($hasFilters = $search || $selectedClassId)
                     <form class="search-form" method="get" action="{{ route('admin.users.students.index') }}">
-                        <input class="search-input" type="text" name="q" placeholder="Search by name or email" value="{{ $search }}">
+                        <input class="search-input" type="text" name="q" placeholder="{{ __('Search by name or email') }}" value="{{ $search }}">
                         <select class="search-input" name="class_id">
-                            <option value="" @selected(!$selectedClassId)>All classes</option>
+                            <option value="" @selected(!$selectedClassId)>{{ __('All classes') }}</option>
                             @foreach ($classes as $class)
                                 <option value="{{ $class->id }}" @selected($selectedClassId == $class->id)>{{ $class->name }}</option>
                             @endforeach
                         </select>
-                        <button class="btn ghost btn-small" type="submit">Filter</button>
+                        <button class="btn ghost btn-small" type="submit">{{ __('Filter') }}</button>
                         @if ($hasFilters)
-                            <a class="btn ghost btn-small" href="{{ route('admin.users.students.index') }}">Clear</a>
+                            <a class="btn ghost btn-small" href="{{ route('admin.users.students.index') }}">{{ __('Clear') }}</a>
                         @endif
                     </form>
                     <span class="text-muted">Showing {{ $students->count() }} of {{ $students->total() }}</span>
@@ -56,13 +56,13 @@
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Class</th>
-                                <th>Department</th>
-                                <th>Admission ID</th>
-                                <th>Status</th>
-                                <th>Created</th>
+                                <th>{{ __('Name') }}</th>
+                                <th>{{ __('Email') }}</th>
+                                <th>{{ __('Class') }}</th>
+                                <th>{{ __('Department') }}</th>
+                                <th>{{ __('Admission ID') }}</th>
+                                <th>{{ __('Status') }}</th>
+                                <th>{{ __('Created') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -75,14 +75,14 @@
                                     <td>{{ $student->studentProfile?->admission_id ?? '-' }}</td>
                                     <td>
                                         <span class="badge {{ $student->is_active ? 'green' : 'rose' }}">
-                                            {{ $student->is_active ? 'Active' : 'Disabled' }}
+                                            {{ $student->is_active ? __('Active') : __('Disabled') }}
                                         </span>
                                     </td>
                                     <td>{{ $student->created_at?->format('Y-m-d') ?? '-' }}</td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td class="table-empty" colspan="7">No students found.</td>
+                                    <td class="table-empty" colspan="7">{{ __('No students found.') }}</td>
                                 </tr>
                             @endforelse
                         </tbody>

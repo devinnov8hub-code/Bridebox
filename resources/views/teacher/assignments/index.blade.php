@@ -6,20 +6,20 @@
     <main class="main">
         <header class="topbar">
             <div class="greeting">
-                <p class="eyebrow">Teacher</p>
-                <h1>Assignments</h1>
-                <p class="subtext">Assignments for your classes and lessons.</p>
+                <p class="eyebrow">{{ __('Teacher') }}</p>
+                <h1>{{ __('Assignments') }}</h1>
+                <p class="subtext">{{ __('Assignments for your classes and lessons.') }}</p>
             </div>
             <div class="actions">
-                <a class="btn primary" href="{{ route('teacher.assignments.create') }}">Add Assignment</a>
+                <a class="btn primary" href="{{ route('teacher.assignments.create') }}">{{ __('Add Assignment') }}</a>
                 @php($exportQuery = request()->query())
-                <a class="btn ghost" href="{{ route('teacher.assignments.export', array_merge($exportQuery, ['format' => 'csv'])) }}">Export CSV</a>
-                <a class="btn ghost" href="{{ route('teacher.assignments.export', array_merge($exportQuery, ['format' => 'xlsx'])) }}">Export Excel</a>
-                <a class="btn ghost" href="{{ route('teacher.assignments.export', array_merge($exportQuery, ['format' => 'pdf'])) }}">Export PDF</a>
-                <a class="btn ghost" href="{{ route('dashboard.teacher') }}">Back to Dashboard</a>
+                <a class="btn ghost" href="{{ route('teacher.assignments.export', array_merge($exportQuery, ['format' => 'csv'])) }}">{{ __('Export CSV') }}</a>
+                <a class="btn ghost" href="{{ route('teacher.assignments.export', array_merge($exportQuery, ['format' => 'xlsx'])) }}">{{ __('Export Excel') }}</a>
+                <a class="btn ghost" href="{{ route('teacher.assignments.export', array_merge($exportQuery, ['format' => 'pdf'])) }}">{{ __('Export PDF') }}</a>
+                <a class="btn ghost" href="{{ route('dashboard.teacher') }}">{{ __('Back to Dashboard') }}</a>
                 <form action="{{ route('logout') }}" method="post">
                     @csrf
-                    <button class="btn primary" type="submit">Logout</button>
+                    <button class="btn primary" type="submit">{{ __('Logout') }}</button>
                 </form>
             </div>
         </header>
@@ -27,38 +27,38 @@
         @if (session('message'))
             <div class="alert alert-dismissible {{ session('status') === 'success' ? 'alert-success' : 'alert-error' }}" role="status" data-auto-dismiss="4000">
                 <span data-alert-message>{{ session('message') }}</span>
-                <button class="alert-close" type="button" data-alert-close data-bs-dismiss="alert" aria-label="Dismiss alert">&times;</button>
+                <button class="alert-close" type="button" data-alert-close data-bs-dismiss="alert" aria-label="{{ __('Dismiss alert') }}">&times;</button>
             </div>
         @endif
 
         <section class="panel table-panel">
             <div class="panel-header">
-                <h4>Assignments List</h4>
+                <h4>{{ __('Assignments List') }}</h4>
                 <span class="badge blue">{{ $assignments->total() }}</span>
             </div>
             <div class="panel-body">
                 <div class="table-toolbar">
                     @php($hasFilters = $search || $selectedClassId || $selectedSubjectId || $selectedTopicId)
                     <form class="search-form" method="get" action="{{ route('teacher.assignments.index') }}">
-                        <input class="search-input" type="text" name="q" placeholder="Search by title" value="{{ $search }}">
+                        <input class="search-input" type="text" name="q" placeholder="{{ __('Search by title') }}" value="{{ $search }}">>
                         <select class="search-input" name="class_id" id="class_id">
-                            <option value="" @selected(!$selectedClassId)>All classes</option>
+                            <option value="" @selected(!$selectedClassId)>{{ __('All classes') }}</option>
                             @foreach ($classes as $class)
                                 <option value="{{ $class->id }}" @selected($selectedClassId == $class->id)>{{ $class->name }}</option>
                             @endforeach
                         </select>
                         <select class="search-input" name="subject_id" id="subject_id" data-subjects-url="{{ route('teacher.subjects.by-class') }}" data-selected-subject="{{ $selectedSubjectId }}">
-                            <option value="" @selected(!$selectedSubjectId)>All subjects</option>
+                            <option value="" @selected(!$selectedSubjectId)>{{ __('All subjects') }}</option>
                             @foreach ($subjects as $subject)
                                 <option value="{{ $subject->id }}" @selected($selectedSubjectId == $subject->id)>{{ $subject->name }}</option>
                             @endforeach
                         </select>
                         <select class="search-input" name="topic_id" id="topic_id" data-topics-url="{{ route('teacher.topics.by-subject') }}" data-selected-topic="{{ $selectedTopicId }}">
-                            <option value="" @selected(!$selectedTopicId)>All topics</option>
+                            <option value="" @selected(!$selectedTopicId)>{{ __('All topics') }}</option>
                         </select>
-                        <button class="btn ghost btn-small" type="submit">Filter</button>
+                        <button class="btn ghost btn-small" type="submit">{{ __('Filter') }}</button>
                         @if ($hasFilters)
-                            <a class="btn ghost btn-small" href="{{ route('teacher.assignments.index') }}">Clear</a>
+                            <a class="btn ghost btn-small" href="{{ route('teacher.assignments.index') }}">{{ __('Clear') }}</a>
                         @endif
                     </form>
                     <span class="text-muted">Showing {{ $assignments->count() }} of {{ $assignments->total() }}</span>
@@ -68,12 +68,12 @@
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>#</th>
-                                <th>Title</th>
-                                <th>Lesson</th>
-                                <th>Topic</th>
-                                <th>Due</th>
-                                <th>Actions</th>
+                                <th>{{ __('#') }}</th>
+                                <th>{{ __('Title') }}</th>
+                                <th>{{ __('Lesson') }}</th>
+                                <th>{{ __('Topic') }}</th>
+                                <th>{{ __('Due') }}</th>
+                                <th>{{ __('Actions') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -86,19 +86,19 @@
                                     <td>{{ $assignment->due_at?->format('Y-m-d') ?? '-' }}</td>
                                     <td>
                                         <div class="table-actions">
-                                            <a class="btn ghost btn-small" href="{{ route('teacher.assignments.submissions.index', $assignment) }}">Submissions</a>
-                                            <a class="btn ghost btn-small" href="{{ route('teacher.assignments.edit', $assignment) }}">Edit</a>
-                                            <form method="post" action="{{ route('teacher.assignments.delete', $assignment) }}" data-confirm="Delete this assignment?" style="display:inline-block;">
+                                            <a class="btn ghost btn-small" href="{{ route('teacher.assignments.submissions.index', $assignment) }}">{{ __('Submissions') }}</a>
+                                            <a class="btn ghost btn-small" href="{{ route('teacher.assignments.edit', $assignment) }}">{{ __('Edit') }}</a>
+                                            <form method="post" action="{{ route('teacher.assignments.delete', $assignment) }}" data-confirm="{{ __('Delete this assignment?') }}" style="display:inline-block;">
                                                 @csrf
                                                 @method('delete')
-                                                <button class="btn ghost btn-small" type="submit">Delete</button>
+                                                <button class="btn ghost btn-small" type="submit">{{ __('Delete') }}</button>
                                             </form>
                                         </div>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td class="table-empty" colspan="6">No assignments found.</td>
+                                    <td class="table-empty" colspan="6">{{ __('No assignments found.') }}</td>
                                 </tr>
                             @endforelse
                         </tbody>

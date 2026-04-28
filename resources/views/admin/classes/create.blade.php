@@ -1,34 +1,34 @@
 @extends('admin.layout')
 
-@section('title', 'Create Class')
+@section('title', __('Create Class'))
 
 @section('main')
     <main class="main">
         <header class="topbar">
             <div class="greeting">
-                <p class="eyebrow">Admin</p>
-                <h1>Create Class</h1>
-                <p class="subtext">Create a new class used in the system.</p>
+                <p class="eyebrow">{{ __('Admin') }}</p>
+                <h1>{{ __('Create Class') }}</h1>
+                <p class="subtext">{{ __('Create a new class used in the system.') }}</p>
             </div>
             <div class="actions">
-                <a class="btn ghost" href="{{ route('admin.classes.index') }}">Back to Classes</a>
+                <a class="btn ghost" href="{{ route('admin.classes.index') }}">{{ __('Back to Classes') }}</a>
                 <form action="{{ route('logout') }}" method="post">
                     @csrf
-                    <button class="btn primary" type="submit">Logout</button>
+                    <button class="btn primary" type="submit">{{ __('Logout') }}</button>
                 </form>
             </div>
         </header>
 
         <section class="panel">
             <div class="panel-header">
-                <h4>Class Details</h4>
-                <span class="badge gold">Required</span>
+                <h4>{{ __('Class Details') }}</h4>
+                <span class="badge gold">{{ __('Required') }}</span>
             </div>
             <div class="panel-body">
                 <form class="form-grid" action="{{ route('admin.classes.store') }}" method="post">
                     @csrf
                     <div class="form-field">
-                        <label for="name">Name</label>
+                        <label for="name">{{ __('Name') }}</label>
                         <input id="name" name="name" type="text" value="{{ old('name') }}" required>
                         @error('name')
                             <span class="form-error">{{ $message }}</span>
@@ -36,7 +36,7 @@
                     </div>
 
                     <div class="form-field">
-                        <label for="slug">Slug (optional)</label>
+                        <label for="slug">{{ __('Slug (optional)') }}</label>
                         <input id="slug" name="slug" type="text" value="{{ old('slug') }}">
                         @error('slug')
                             <span class="form-error">{{ $message }}</span>
@@ -44,9 +44,9 @@
                     </div>
 
                     <div class="form-field">
-                        <label for="section_id">Section</label>
+                        <label for="section_id">{{ __('Section') }}</label>
                         <select id="section_id" name="section_id" required>
-                            <option value="" disabled @selected(!old('section_id'))>Select a section</option>
+                            <option value="" disabled @selected(!old('section_id'))>{{ __('Select a section') }}</option>
                             @foreach ($sections as $section)
                                 <option value="{{ $section->id }}" @selected(old('section_id') == $section->id)>{{ $section->name }}</option>
                             @endforeach
@@ -57,7 +57,7 @@
                     </div>
 
                     <div class="form-field form-field-full">
-                        <label for="description">Description (optional)</label>
+                        <label for="description">{{ __('Description (optional)') }}</label>
                         <textarea id="description" name="description">{{ old('description') }}</textarea>
                         @error('description')
                             <span class="form-error">{{ $message }}</span>
@@ -65,7 +65,7 @@
                     </div>
 
                     <div class="form-actions">
-                        <button class="btn primary" type="submit">Create Class</button>
+                        <button class="btn primary" type="submit">{{ __('Create Class') }}</button>
                     </div>
                 </form>
             </div>

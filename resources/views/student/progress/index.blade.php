@@ -6,15 +6,15 @@
     <main class="main">
         <header class="topbar">
             <div class="greeting">
-                <p class="eyebrow">Student</p>
-                <h1>Progress</h1>
-                <p class="subtext">Track your recent activity and progress.</p>
+                <p class="eyebrow">{{ __('Student') }}</p>
+                <h1>{{ __('Progress') }}</h1>
+                <p class="subtext">{{ __('Track your recent activity and progress.') }}</p>
             </div>
             <div class="actions">
-                <a class="btn ghost" href="{{ route('dashboard.student') }}">Back to Dashboard</a>
+                <a class="btn ghost" href="{{ route('dashboard.student') }}">{{ __('Back to Dashboard') }}</a>
                 <form action="{{ route('logout') }}" method="post">
                     @csrf
-                    <button class="btn primary" type="submit">Logout</button>
+                    <button class="btn primary" type="submit">{{ __('Logout') }}</button>
                 </form>
             </div>
         </header>
@@ -25,7 +25,7 @@
                     <i class="fa-solid fa-book-open" aria-hidden="true"></i>
                 </div>
                 <div>
-                    <p>Lessons</p>
+                    <p>{{ __('Lessons') }}</p>
                     <span>{{ $lessonsCount }}</span>
                 </div>
             </div>
@@ -34,7 +34,7 @@
                     <i class="fa-solid fa-list-check" aria-hidden="true"></i>
                 </div>
                 <div>
-                    <p>Topics</p>
+                    <p>{{ __('Topics') }}</p>
                     <span>{{ $topicsCount }}</span>
                 </div>
             </div>
@@ -43,7 +43,7 @@
                     <i class="fa-solid fa-file-lines" aria-hidden="true"></i>
                 </div>
                 <div>
-                    <p>Assignments</p>
+                    <p>{{ __('Assignments') }}</p>
                     <span>{{ $submissionsCount }} / {{ $assignmentsCount }}</span>
                 </div>
             </div>
@@ -52,7 +52,7 @@
                     <i class="fa-solid fa-clipboard-check" aria-hidden="true"></i>
                 </div>
                 <div>
-                    <p>Assessments</p>
+                    <p>{{ __('Assessments') }}</p>
                     <span>{{ $attemptsCompleted }} / {{ $quizzesCount + $examsCount }}</span>
                 </div>
             </div>
@@ -60,7 +60,7 @@
 
         <section class="panel table-panel">
             <div class="panel-header">
-                <h4>Recent Assessments</h4>
+                <h4>{{ __('Recent Assessments') }}</h4>
                 <span class="badge blue">{{ $recentAttempts->count() }}</span>
             </div>
             <div class="panel-body">
@@ -68,12 +68,12 @@
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>Assessment</th>
-                                <th>Type</th>
-                                <th>Subject</th>
-                                <th>Topic</th>
-                                <th>Score</th>
-                                <th>Date</th>
+                                <th>{{ __('Assessment') }}</th>
+                                <th>{{ __('Type') }}</th>
+                                <th>{{ __('Subject') }}</th>
+                                <th>{{ __('Topic') }}</th>
+                                <th>{{ __('Score') }}</th>
+                                <th>{{ __('Date') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -88,7 +88,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td class="table-empty" colspan="6">No assessment attempts yet.</td>
+                                    <td class="table-empty" colspan="6">{{ __('No assessment attempts yet.') }}</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -99,7 +99,7 @@
 
         <section class="panel table-panel">
             <div class="panel-header">
-                <h4>Recent Assignment Submissions</h4>
+                <h4>{{ __('Recent Assignment Submissions') }}</h4>
                 <span class="badge blue">{{ $recentSubmissions->count() }}</span>
             </div>
             <div class="panel-body">
@@ -107,11 +107,11 @@
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>Assignment</th>
-                                <th>Lesson</th>
-                                <th>Topic</th>
-                                <th>Status</th>
-                                <th>Date</th>
+                                <th>{{ __('Assignment') }}</th>
+                                <th>{{ __('Lesson') }}</th>
+                                <th>{{ __('Topic') }}</th>
+                                <th>{{ __('Status') }}</th>
+                                <th>{{ __('Date') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -120,12 +120,12 @@
                                     <td>{{ $submission->assignment?->title ?? '-' }}</td>
                                     <td>{{ $submission->assignment?->lesson?->title ?? '-' }}</td>
                                     <td>{{ $submission->assignment?->lesson?->topic?->title ?? '-' }}</td>
-                                    <td>{{ $submission->status ?? 'submitted' }}</td>
+                                    <td>{{ $submission->status ?? __('submitted') }}</td>
                                     <td>{{ $submission->submitted_at?->format('Y-m-d') ?? '-' }}</td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td class="table-empty" colspan="5">No submissions yet.</td>
+                                    <td class="table-empty" colspan="5">{{ __('No submissions yet.') }}</td>
                                 </tr>
                             @endforelse
                         </tbody>

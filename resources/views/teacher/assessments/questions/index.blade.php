@@ -12,11 +12,11 @@
                 <p class="subtext">Manage questions for this {{ $type }}.</p>
             </div>
             <div class="actions">
-                <a class="btn primary" href="{{ route($routePrefix . '.questions.create', $assessment) }}">Add Question</a>
+                <a class="btn primary" href="{{ route($routePrefix . '.questions.create', $assessment) }}">{{ __('Add Question') }}</a>
                 <a class="btn ghost" href="{{ route($routePrefix . '.index') }}">Back to {{ ucfirst($type) }}s</a>
                 <form action="{{ route('logout') }}" method="post">
                     @csrf
-                    <button class="btn primary" type="submit">Logout</button>
+                    <button class="btn primary" type="submit">{{ __('Logout') }}</button>
                 </form>
             </div>
         </header>
@@ -24,13 +24,13 @@
         @if (session('message'))
             <div class="alert alert-dismissible {{ session('status') === 'success' ? 'alert-success' : 'alert-error' }}" role="status" data-auto-dismiss="4000">
                 <span data-alert-message>{{ session('message') }}</span>
-                <button class="alert-close" type="button" data-alert-close data-bs-dismiss="alert" aria-label="Dismiss alert">&times;</button>
+                <button class="alert-close" type="button" data-alert-close data-bs-dismiss="alert" aria-label="{{ __('Dismiss alert') }}">&times;</button>
             </div>
         @endif
 
         <section class="panel table-panel">
             <div class="panel-header">
-                <h4>Questions</h4>
+                <h4>{{ __('Questions') }}</h4>
                 <span class="badge blue">{{ $questions->count() }}</span>
             </div>
             <div class="panel-body">
@@ -38,11 +38,11 @@
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <th>#</th>
-                                <th>Question</th>
-                                <th>Options</th>
-                                <th>Answer</th>
-                                <th>Actions</th>
+                                <th>{{ __('#') }}</th>
+                                <th>{{ __('Question') }}</th>
+                                <th>{{ __('Options') }}</th>
+                                <th>{{ __('Answer') }}</th>
+                                <th>{{ __('Actions') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -63,18 +63,18 @@
                                     </td>
                                     <td>
                                         <div class="table-actions">
-                                            <a class="btn ghost btn-small" href="{{ route($routePrefix . '.questions.edit', [$assessment, $question]) }}">Edit</a>
-                                            <form method="post" action="{{ route($routePrefix . '.questions.delete', [$assessment, $question]) }}" data-confirm="Delete this question?" style="display:inline-block;">
+                                            <a class="btn ghost btn-small" href="{{ route($routePrefix . '.questions.edit', [$assessment, $question]) }}">{{ __('Edit') }}</a>
+                                            <form method="post" action="{{ route($routePrefix . '.questions.delete', [$assessment, $question]) }}" data-confirm="{{ __('Delete this question?') }}" style="display:inline-block;">
                                                 @csrf
                                                 @method('delete')
-                                                <button class="btn ghost btn-small" type="submit">Delete</button>
+                                                <button class="btn ghost btn-small" type="submit">{{ __('Delete') }}</button>
                                             </form>
                                         </div>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td class="table-empty" colspan="5">No questions added yet.</td>
+                                    <td class="table-empty" colspan="5">{{ __('No questions added yet.') }}</td>
                                 </tr>
                             @endforelse
                         </tbody>

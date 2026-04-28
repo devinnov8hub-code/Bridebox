@@ -38,6 +38,7 @@ class User extends Authenticatable
         'role',
         'is_active',
         'school_class_id',
+        'locale',
         'password',
     ];
 

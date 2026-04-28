@@ -12,15 +12,99 @@ use App\Models\Section;
 
 class InstallController extends Controller
 {
-    public function show(): View|RedirectResponse
+    public function show(Request $request): View|RedirectResponse
     {
         if ($this->isInstalled()) {
             return redirect()->route('landing');
         }
 
+        $mode = $request->query('mode');
+
+        // if school mode explicitly requested, show the existing installer form
+        if ($mode === 'school') {
+            return view('install', [
+                'sections' => $this->defaultSections(),
+            ]);
+        }
+
+        // default: show choice screen (install view handles choice display)
         return view('install', [
             'sections' => $this->defaultSections(),
         ]);
+    }
+
+    public function showGeneric(): View|RedirectResponse
+    {
+        if ($this->isInstalled()) {
+            return redirect()->route('landing');
+        }
+
+        return view('install-generic');
+    }
+
+    public function storeGeneric(Request $request): RedirectResponse
+    {
+        if ($this->isInstalled()) {
+            return redirect()->route('landing');
+        }
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:8'],
+            'seed_demo' => ['nullable', 'boolean'],
+            'import_source' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $admin = User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'role' => User::ROLE_ADMIN,
+            'is_active' => true,
+            'password' => Hash::make($data['password']),
+        ]);
+
+        if (!empty($data['seed_demo']) || !empty($data['import_source'])) {
+            try {
+                // If an import source is provided, attempt to download & integrate via the GenericImportService
+                if (!empty($data['import_source']) && class_exists(\App\Services\GenericImportService::class)) {
+                    $importer = app(\App\Services\GenericImportService::class);
+                    // the service expects a local extracted directory; the service can also accept a remote zip URL
+                    // attempt to use its helper to fetch+integrate if available, otherwise download here
+                    if (method_exists($importer, 'integrateImportFromUrl')) {
+                        $importer->integrateImportFromUrl($data['import_source']);
+                    } else {
+                        // fallback: download & extract similar to the CLI command
+                        $tmp = storage_path('app/imports/' . time());
+                        if (!is_dir($tmp)) {
+                            mkdir($tmp, 0755, true);
+                        }
+                        $zipPath = $tmp . '/import.zip';
+                        $body = \Illuminate\Support\Facades\Http::withOptions(['verify' => false])->get($data['import_source'])->body();
+                        file_put_contents($zipPath, $body);
+                        $zip = new \ZipArchive();
+                        if ($zip->open($zipPath) === true) {
+                            $zip->extractTo($tmp);
+                            $zip->close();
+                            $importer->integrateImport($tmp);
+                        } else {
+                            throw new \Exception('Failed to open downloaded import zip');
+                        }
+                    }
+                }
+
+                // run the seeder directly in this request so it uses the same DB connection and models
+                if (class_exists(\Database\Seeders\DemoGenericSeeder::class)) {
+                    app(\Database\Seeders\DemoGenericSeeder::class)->run();
+                }
+            } catch (\Exception $e) {
+                return back()->withErrors(['install' => 'Generic install failed: ' . $e->getMessage()])->withInput();
+            }
+        }
+
+        $this->writeLock($admin->email, 'generic');
+
+        return redirect()->route('login', ['role' => 'admin'])->with('status', 'Installation completed.');
     }
 
     public function store(Request $request): RedirectResponse
@@ -97,7 +181,7 @@ class InstallController extends Controller
         return file_exists($this->lockPath());
     }
 
-    private function writeLock(string $email): void
+    private function writeLock(string $email, string $mode = 'school'): void
     {
         $path = $this->lockPath();
         $dir = dirname($path);
@@ -109,6 +193,7 @@ class InstallController extends Controller
         $payload = [
             'installed_at' => now()->toIso8601String(),
             'admin_email' => $email,
+            'mode' => $mode,
         ];
 
         file_put_contents($path, json_encode($payload));

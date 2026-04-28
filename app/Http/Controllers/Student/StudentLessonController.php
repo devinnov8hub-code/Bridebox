@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Models\Assessment;
 use App\Models\Lesson;
+use App\Models\LessonCompletion;
 use App\Models\SchoolClass;
 use App\Models\Subject;
 use App\Models\Topic;
@@ -72,6 +74,10 @@ class StudentLessonController extends Controller
             ->paginate(10)
             ->withQueryString();
 
+        $completedLessonIds = $student
+            ? LessonCompletion::where('user_id', $student->id)->pluck('lesson_id')->all()
+            : [];
+
         return view('student.lessons.index', [
             'student' => $student,
             'lessons' => $lessons,
@@ -80,6 +86,7 @@ class StudentLessonController extends Controller
             'search' => $search,
             'selectedSubjectId' => $subjectId ?: null,
             'selectedTopicId' => $topicId ?: null,
+            'completedLessonIds' => $completedLessonIds,
         ]);
     }
 
@@ -88,9 +95,27 @@ class StudentLessonController extends Controller
         $student = $request->user();
         $this->assertLessonAccess($student?->school_class_id, $lesson);
 
+        // Auto-mark as completed on first view
+        LessonCompletion::firstOrCreate(
+            ['user_id' => $student->id, 'lesson_id' => $lesson->id],
+            ['completed_at' => now()]
+        );
+
+        $lesson->load(['topic.subject', 'topic.schoolClass', 'assignments']);
+
+        $quizzes = Assessment::query()
+            ->where('type', Assessment::TYPE_QUIZ)
+            ->where('topic_id', $lesson->topic_id)
+            ->where('school_class_id', $student->school_class_id)
+            ->orderBy('title')
+            ->get();
+
         return view('student.lessons.show', [
             'student' => $student,
-            'lesson' => $lesson->load(['topic.subject', 'topic.schoolClass']),
+            'lesson' => $lesson,
+            'isCompleted' => true,
+            'assignments' => $lesson->assignments,
+            'quizzes' => $quizzes,
         ]);
     }
 

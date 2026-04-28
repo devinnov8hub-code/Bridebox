@@ -6,15 +6,15 @@
     <main class="main">
         <header class="topbar">
             <div class="greeting">
-                <p class="eyebrow">Teacher Student</p>
+                <p class="eyebrow">{{ __('Teacher Student') }}</p>
                 <h1>{{ $student->name }}</h1>
-                <p class="subtext">View student details and actions.</p>
+                <p class="subtext">{{ __('View student details and actions.') }}</p>
             </div>
             <div class="actions">
-                <a class="btn ghost" href="{{ route('teacher.students.index') }}">Back to Students</a>
+                <a class="btn ghost" href="{{ route('teacher.students.index') }}">{{ __('Back to Students') }}</a>
                 <form action="{{ route('logout') }}" method="post">
                     @csrf
-                    <button class="btn primary" type="submit">Logout</button>
+                    <button class="btn primary" type="submit">{{ __('Logout') }}</button>
                 </form>
             </div>
         </header>
@@ -28,50 +28,50 @@
 
         <section class="panel">
             <div class="panel-header">
-                <h4>Student Details</h4>
+                <h4>{{ __('Student Details') }}</h4>
                 <span class="badge {{ $student->is_active ? 'green' : 'rose' }}">{{ $student->is_active ? 'Active' : 'Disabled' }}</span>
             </div>
             <div class="panel-body">
                 <div class="item-list" style="display:flex;flex-direction:column;gap:6px;">
                     <div class="item">
                         <div class="item-info">
-                            <p>Name</p>
+                            <p>{{ __('Name') }}</p>
                             <span>{{ $student->name }}</span>
                         </div>
                     </div>
                     <div class="item">
                         <div class="item-info">
-                            <p>Email</p>
+                            <p>{{ __('Email') }}</p>
                             <span>{{ $student->email }}</span>
                         </div>
                     </div>
                     <div class="item">
                         <div class="item-info">
-                            <p>Phone</p>
+                            <p>{{ __('Phone') }}</p>
                             <span>{{ $student->phone ?: '-' }}</span>
                         </div>
                     </div>
                     <div class="item">
                         <div class="item-info">
-                            <p>Class</p>
+                            <p>{{ __('Class') }}</p>
                             <span>{{ $student->schoolClass?->name ?? $student->studentProfile?->class ?? '-' }}</span>
                         </div>
                     </div>
                     <div class="item">
                         <div class="item-info">
-                            <p>Department</p>
+                            <p>{{ __('Department') }}</p>
                             <span>{{ $student->studentProfile?->department ?? '-' }}</span>
                         </div>
                     </div>
                     <div class="item">
                         <div class="item-info">
-                            <p>Admission ID</p>
+                            <p>{{ __('Admission ID') }}</p>
                             <span>{{ $student->studentProfile?->admission_id ?? '-' }}</span>
                         </div>
                     </div>
                     <div class="item">
                         <div class="item-info">
-                            <p>Created</p>
+                            <p>{{ __('Created') }}</p>
                             <span>{{ $student->created_at?->format('Y-m-d') ?? '-' }}</span>
                         </div>
                     </div>
@@ -91,16 +91,16 @@
         
         <section class="panel">
             <div class="panel-header">
-                <h4>Actions</h4>
-                <span class="badge gold">Manage</span>
+                <h4>{{ __('Actions') }}</h4>
+                <span class="badge gold">{{ __('Manage') }}</span>
             </div>
             <div class="panel-body">
                 <div class="table-actions">
-                    <a class="btn ghost btn-small" href="{{ route('teacher.students.edit', $student) }}">Edit</a>
-                    <form method="post" action="{{ route('teacher.students.delete', $student) }}" data-confirm="Delete this student account?">
+                    <a class="btn ghost btn-small" href="{{ route('teacher.students.edit', $student) }}">{{ __('Edit') }}</a>
+                    <form method="post" action="{{ route('teacher.students.delete', $student) }}" data-confirm="{{ __('Delete this student account?') }}">
                         @csrf
                         @method('delete')
-                        <button class="btn ghost btn-small" type="submit">Delete</button>
+                        <button class="btn ghost btn-small" type="submit">{{ __('Delete') }}</button>
                     </form>
                 </div>
             </div>

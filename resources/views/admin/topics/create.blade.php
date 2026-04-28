@@ -1,34 +1,34 @@
 @extends('admin.layout')
 
-@section('title', 'Create Topic')
+@section('title', __('Create Topic'))
 
 @section('main')
     <main class="main">
         <header class="topbar">
             <div class="greeting">
-                <p class="eyebrow">Admin</p>
-                <h1>Create Topic</h1>
-                <p class="subtext">Add a topic tied to a class and subject.</p>
+                <p class="eyebrow">{{ __('Admin') }}</p>
+                <h1>{{ __('Create Topic') }}</h1>
+                <p class="subtext">{{ __('Add a topic tied to a class and subject.') }}</p>
             </div>
             <div class="actions">
-                <a class="btn ghost" href="{{ route('admin.topics.index') }}">Back to Topics</a>
+                <a class="btn ghost" href="{{ route('admin.topics.index') }}">{{ __('Back to Topics') }}</a>
                 <form action="{{ route('logout') }}" method="post">
                     @csrf
-                    <button class="btn primary" type="submit">Logout</button>
+                    <button class="btn primary" type="submit">{{ __('Logout') }}</button>
                 </form>
             </div>
         </header>
 
         <section class="panel">
             <div class="panel-header">
-                <h4>Topic Details</h4>
-                <span class="badge gold">Required</span>
+                <h4>{{ __('Topic Details') }}</h4>
+                <span class="badge gold">{{ __('Required') }}</span>
             </div>
             <div class="panel-body">
                 <form class="form-grid" action="{{ route('admin.topics.store') }}" method="post">
                     @csrf
                     <div class="form-field">
-                        <label for="title">Title</label>
+                        <label for="title">{{ __('Title') }}</label>
                         <input id="title" name="title" type="text" value="{{ old('title') }}" required>
                         @error('title')
                             <span class="form-error">{{ $message }}</span>
@@ -36,9 +36,9 @@
                     </div>
 
                     <div class="form-field">
-                        <label for="school_class_id">Class</label>
+                        <label for="school_class_id">{{ __('Class') }}</label>
                         <select id="school_class_id" name="school_class_id" required>
-                            <option value="" disabled @selected(!old('school_class_id'))>Select a class</option>
+                            <option value="" disabled @selected(!old('school_class_id'))>{{ __('Select a class') }}</option>
                             @foreach ($classes as $class)
                                 <option value="{{ $class->id }}" @selected(old('school_class_id') == $class->id)>{{ $class->name }}</option>
                             @endforeach
@@ -49,7 +49,7 @@
                     </div>
 
                     <div class="form-field">
-                        <label for="subject_id">Subject</label>
+                        <label for="subject_id">{{ __('Subject') }}</label>
                         <select id="subject_id" name="subject_id" required data-subjects-url="{{ route('admin.subjects.by-class') }}" data-selected-subject="{{ old('subject_id') }}">
                             <option value="" disabled @selected(!old('subject_id'))>Select a class first</option>
                         </select>
@@ -59,7 +59,7 @@
                     </div>
 
                     <div class="form-field form-field-full">
-                        <label for="description">Description (optional)</label>
+                        <label for="description">{{ __('Description (optional)') }}</label>
                         <textarea id="description" name="description">{{ old('description') }}</textarea>
                         @error('description')
                             <span class="form-error">{{ $message }}</span>
@@ -67,7 +67,7 @@
                     </div>
 
                     <div class="form-actions">
-                        <button class="btn primary" type="submit">Create Topic</button>
+                        <button class="btn primary" type="submit">{{ __('Create Topic') }}</button>
                     </div>
                 </form>
             </div>

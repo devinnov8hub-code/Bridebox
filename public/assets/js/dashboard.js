@@ -172,6 +172,71 @@ const enableRowLinks = () => {
     });
 };
 
+const enableToolbarToggle = () => {
+    const label = (document.body.dataset.toolbarLabel || 'Filter');
+    const toolbars = document.querySelectorAll('.table-toolbar');
+    toolbars.forEach((toolbar, index) => {
+        const storageKey = `toolbar:${window.location.pathname}:${index}`;
+        const isCollapsed = window.localStorage.getItem(storageKey) === '1';
+
+        const wrapper = document.createElement('div');
+        wrapper.className = 'table-toolbar-wrapper';
+        toolbar.parentNode.insertBefore(wrapper, toolbar);
+        wrapper.appendChild(toolbar);
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'toolbar-toggle btn ghost btn-small';
+        btn.setAttribute('aria-expanded', isCollapsed ? 'false' : 'true');
+        btn.innerHTML = `<i class="fa-solid fa-sliders" aria-hidden="true"></i>${label}<i class="fa-solid fa-chevron-down toolbar-arrow" aria-hidden="true"></i>`;
+        wrapper.insertBefore(btn, toolbar);
+
+        if (isCollapsed) {
+            toolbar.classList.add('is-collapsed');
+        }
+
+        btn.addEventListener('click', () => {
+            const nowCollapsed = toolbar.classList.toggle('is-collapsed');
+            btn.setAttribute('aria-expanded', nowCollapsed ? 'false' : 'true');
+            window.localStorage.setItem(storageKey, nowCollapsed ? '1' : '0');
+        });
+    });
+};
+
+const enableMobileSidebar = () => {
+    const toggle = document.getElementById('sidebar-toggle');
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('sidebar-overlay');
+
+    if (!toggle || !sidebar) return;
+
+    const open = () => {
+        sidebar.classList.add('is-open');
+        if (overlay) overlay.classList.add('is-visible');
+        toggle.setAttribute('aria-expanded', 'true');
+        toggle.innerHTML = '<i class="fa-solid fa-xmark" aria-hidden="true"></i>';
+    };
+
+    const close = () => {
+        sidebar.classList.remove('is-open');
+        if (overlay) overlay.classList.remove('is-visible');
+        toggle.setAttribute('aria-expanded', 'false');
+        toggle.innerHTML = '<i class="fa-solid fa-bars" aria-hidden="true"></i>';
+    };
+
+    toggle.addEventListener('click', () => {
+        sidebar.classList.contains('is-open') ? close() : open();
+    });
+
+    if (overlay) overlay.addEventListener('click', close);
+
+    sidebar.querySelectorAll('.nav-item').forEach((item) => {
+        item.addEventListener('click', () => {
+            if (window.innerWidth <= 900) close();
+        });
+    });
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     setBarAnimations();
     setMeterAnimations();
@@ -180,4 +245,6 @@ document.addEventListener('DOMContentLoaded', () => {
     enableAlerts();
     enableRealtimeFilters();
     enableRowLinks();
+    enableMobileSidebar();
+    enableToolbarToggle();
 });

@@ -1,9 +1,9 @@
 @if ($paginator->hasPages())
     <div class="pagination">
         @if ($paginator->onFirstPage())
-            <span class="disabled">Previous</span>
+            <span class="disabled">{{ __('Previous') }}</span>
         @else
-            <a href="{{ $paginator->previousPageUrl() }}" rel="prev">Previous</a>
+            <a href="{{ $paginator->previousPageUrl() }}" rel="prev">{{ __('Previous') }}</a>
         @endif
 
         @foreach ($paginator->getUrlRange(1, $paginator->lastPage()) as $page => $url)
@@ -15,9 +15,9 @@
         @endforeach
 
         @if ($paginator->hasMorePages())
-            <a href="{{ $paginator->nextPageUrl() }}" rel="next">Next</a>
+            <a href="{{ $paginator->nextPageUrl() }}" rel="next">{{ __('Next') }}</a>
         @else
-            <span class="disabled">Next</span>
+            <span class="disabled">{{ __('Next') }}</span>
         @endif
     </div>
 @endif

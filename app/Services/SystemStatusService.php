@@ -56,7 +56,6 @@ class SystemStatusService
 
     private function getHotspotConnection(): ?array
     {
-        // List active connections with basic fields.
         $output = $this->runCommand('nmcli -t -f NAME,TYPE,DEVICE,ACTIVE,UUID con show --active');
         if ($output === null) {
             return null;
@@ -64,58 +63,33 @@ class SystemStatusService
 
         $lines = array_filter(explode("\n", trim($output)));
         foreach ($lines as $line) {
-
-            $parts = preg_split('/(?<!\\\\):/', $line);
-            $name   = isset($parts[0]) ? str_replace('\\:', ':', $parts[0]) : '';
-            $type   = isset($parts[1]) ? str_replace('\\:', ':', $parts[1]) : '';
-            $device = isset($parts[2]) ? str_replace('\\:', ':', $parts[2]) : '';
-            $active = isset($parts[3]) ? str_replace('\\:', ':', $parts[3]) : '';
-            $uuid   = isset($parts[4]) ? str_replace('\\:', ':', $parts[4]) : '';
+            $parts = explode(':', $line);
+            $name = $parts[0] ?? '';
+            $type = $parts[1] ?? '';
+            $device = $parts[2] ?? '';
+            $active = $parts[3] ?? '';
+            $uuid = $parts[4] ?? '';
 
             if ($active !== 'yes' || !$this->isWifiConnectionType($type) || $uuid === '') {
                 continue;
             }
 
-            // Check if this wifi connection is in AP (hotspot) mode.
-            // nmcli -t -f FIELD con show UUID outputs one "field:value" per line.
-            $modeOutput = $this->runCommand(
-                "nmcli -t -f 802-11-wireless.mode con show " . escapeshellarg($uuid)
-            );
+            $modeOutput = $this->runCommand("nmcli -t -f 802-11-wireless.mode,802-11-wireless.ssid con show {$uuid}");
             if ($modeOutput === null) {
                 continue;
             }
 
-            // Output would looks like:  802-11-wireless.mode:ap
-            $modeValue = '';
-            foreach (explode("\n", trim($modeOutput)) as $modeLine) {
-                $colonPos = strpos($modeLine, ':');
-                if ($colonPos !== false) {
-                    $modeValue = strtolower(trim(substr($modeLine, $colonPos + 1)));
-                    break;
-                }
-            }
+            $modeParts = explode(':', trim($modeOutput), 2);
+            $mode = strtolower($modeParts[0] ?? '');
+            $ssid = $modeParts[1] ?? '';
 
-            if ($modeValue !== 'ap') {
-                continue;
+            if ($mode === 'ap') {
+                return [
+                    'name' => $name,
+                    'ssid' => $ssid,
+                    'device' => $device,
+                ];
             }
-
-            // Fetch the SSID separately to avoid multi-field parsing issues.
-            $ssidOutput = $this->runCommand(
-                "nmcli -t -f 802-11-wireless.ssid con show " . escapeshellarg($uuid)
-            );
-            $ssid = '';
-            if ($ssidOutput !== null) {
-                $colonPos = strpos($ssidOutput, ':');
-                if ($colonPos !== false) {
-                    $ssid = trim(substr($ssidOutput, $colonPos + 1));
-                }
-            }
-
-            return [
-                'name'   => $name,
-                'ssid'   => $ssid,
-                'device' => $device,
-            ];
         }
 
         return null;

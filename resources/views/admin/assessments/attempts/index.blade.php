@@ -7,7 +7,7 @@
     <main class="main">
         <header class="topbar">
             <div class="greeting">
-                <p class="eyebrow">Admin</p>
+                <p class="eyebrow">{{ __('Admin') }}</p>
                 <h1>{{ ucfirst($type) }} Results</h1>
                 <p class="subtext">Review student attempts for {{ $type }}s.</p>
             </div>
@@ -15,7 +15,7 @@
                 <a class="btn ghost" href="{{ route($routePrefix . '.index') }}">Back to {{ ucfirst($type) }}s</a>
                 <form action="{{ route('logout') }}" method="post">
                     @csrf
-                    <button class="btn primary" type="submit">Logout</button>
+                    <button class="btn primary" type="submit">{{ __('Logout') }}</button>
                 </form>
             </div>
         </header>
@@ -29,28 +29,28 @@
 
         <section class="panel table-panel">
             <div class="panel-header">
-                <h4>Attempts</h4>
+                <h4>{{ __('Attempts') }}</h4>
                 <span class="badge blue">{{ $attempts->total() }}</span>
             </div>
             <div class="panel-body">
                 <div class="table-toolbar">
                     @php($hasFilters = $search || $selectedClassId || $selectedSubjectId || $selectedTopicId || $selectedAssessmentId || $selectedStudentId)
                     <form class="search-form" method="get" action="{{ route($routePrefix . '.attempts.index') }}">
-                        <input class="search-input" type="text" name="q" placeholder="Search student or assessment" value="{{ $search }}">
+                        <input class="search-input" type="text" name="q" placeholder="{{ __('Search student or assessment') }}" value="{{ $search }}">
                         <select class="search-input" name="class_id" id="class_id">
-                            <option value="" @selected(!$selectedClassId)>All classes</option>
+                            <option value="" @selected(!$selectedClassId)>{{ __('All classes') }}</option>
                             @foreach ($classes as $class)
                                 <option value="{{ $class->id }}" @selected($selectedClassId == $class->id)>{{ $class->name }}</option>
                             @endforeach
                         </select>
                         <select class="search-input" name="subject_id" id="subject_id" data-subjects-url="{{ route('admin.subjects.by-class') }}" data-selected-subject="{{ $selectedSubjectId }}">
-                            <option value="" @selected(!$selectedSubjectId)>All subjects</option>
+                            <option value="" @selected(!$selectedSubjectId)>{{ __('All subjects') }}</option>
                             @foreach ($subjects as $subject)
                                 <option value="{{ $subject->id }}" @selected($selectedSubjectId == $subject->id)>{{ $subject->name }}</option>
                             @endforeach
                         </select>
                         <select class="search-input" name="topic_id" id="topic_id" data-topics-url="{{ route('admin.topics.by-subject') }}" data-selected-topic="{{ $selectedTopicId }}">
-                            <option value="" @selected(!$selectedTopicId)>All topics</option>
+                            <option value="" @selected(!$selectedTopicId)>{{ __('All topics') }}</option>
                             @foreach ($topics as $topic)
                                 <option value="{{ $topic->id }}" @selected($selectedTopicId == $topic->id)>{{ $topic->title }}</option>
                             @endforeach
@@ -62,14 +62,14 @@
                             @endforeach
                         </select>
                         <select class="search-input" name="student_id">
-                            <option value="" @selected(!$selectedStudentId)>All students</option>
+                            <option value="" @selected(!$selectedStudentId)>{{ __('All students') }}</option>
                             @foreach ($students as $student)
                                 <option value="{{ $student->id }}" @selected($selectedStudentId == $student->id)>{{ $student->name }}</option>
                             @endforeach
                         </select>
-                        <button class="btn ghost btn-small" type="submit">Filter</button>
+                        <button class="btn ghost btn-small" type="submit">{{ __('Filter') }}</button>
                         @if ($hasFilters)
-                            <a class="btn ghost btn-small" href="{{ route($routePrefix . '.attempts.index') }}">Clear</a>
+                            <a class="btn ghost btn-small" href="{{ route($routePrefix . '.attempts.index') }}">{{ __('Clear') }}</a>
                         @endif
                     </form>
                     <span class="text-muted">Showing {{ $attempts->count() }} of {{ $attempts->total() }}</span>
@@ -80,13 +80,13 @@
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>Student</th>
+                                <th>{{ __('Student') }}</th>
                                 <th>{{ ucfirst($type) }}</th>
-                                <th>Class</th>
-                                <th>Score</th>
-                                <th>Status</th>
-                                <th>Completed</th>
-                                <th>Actions</th>
+                                <th>{{ __('Class') }}</th>
+                                <th>{{ __('Score') }}</th>
+                                <th>{{ __('Status') }}</th>
+                                <th>{{ __('Completed') }}</th>
+                                <th>{{ __('Actions') }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -102,19 +102,19 @@
                                     <td>{{ $score }} / {{ $total }}</td>
                                     <td>
                                         <span class="badge {{ $attempt->status === 'completed' ? ($score >= $passMark ? 'green' : 'rose') : 'blue' }}">
-                                            {{ $attempt->status === 'completed' ? ($score >= $passMark ? 'Passed' : 'Needs Review') : 'In Progress' }}
+                                            {{ $attempt->status === 'completed' ? ($score >= $passMark ? __('Passed') : __('Needs Review')) : __('In Progress') }}
                                         </span>
                                     </td>
                                     <td>{{ $attempt->completed_at?->format('Y-m-d H:i') ?? '-' }}</td>
                                     <td>
                                         <div class="table-actions">
-                                            <a class="btn ghost btn-small" href="{{ route($routePrefix . '.attempts.show', $attempt) }}">Review</a>
+                                            <a class="btn ghost btn-small" href="{{ route($routePrefix . '.attempts.show', $attempt) }}">{{ __('Review') }}</a>
                                         </div>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td class="table-empty" colspan="8">No attempts found.</td>
+                                    <td class="table-empty" colspan="8">{{ __('No attempts found.') }}</td>
                                 </tr>
                             @endforelse
                         </tbody>

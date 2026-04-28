@@ -9,54 +9,54 @@
             <div class="greeting">
                 <p class="eyebrow">{{ ucfirst($type) }}</p>
                 <h1>{{ $attempt->user?->name ?? 'Student' }} - {{ $assessment->title }}</h1>
-                <p class="subtext">Attempt review and answers.</p>
+                <p class="subtext">{{ __('Attempt review and answers.') }}</p>
             </div>
             <div class="actions">
-                <a class="btn ghost" href="{{ route($routePrefix . '.attempts.index', ['assessment_id' => $assessment->id]) }}">Back to Results</a>
+                <a class="btn ghost" href="{{ route($routePrefix . '.attempts.index', ['assessment_id' => $assessment->id]) }}">{{ __('Back to Results') }}</a>
                 <form action="{{ route('logout') }}" method="post">
                     @csrf
-                    <button class="btn primary" type="submit">Logout</button>
+                    <button class="btn primary" type="submit">{{ __('Logout') }}</button>
                 </form>
             </div>
         </header>
 
         <section class="panel">
             <div class="panel-header">
-                <h4>Attempt Summary</h4>
+                <h4>{{ __('Attempt Summary') }}</h4>
                 <span class="badge {{ $attempt->status === 'completed' ? 'gold' : 'blue' }}">
-                    {{ $attempt->status === 'completed' ? 'Completed' : 'In Progress' }}
+                    {{ $attempt->status === 'completed' ? __('Completed') : __('In Progress') }}
                 </span>
             </div>
             <div class="panel-body">
                 <div class="item-list" style="display:flex;flex-direction:column;gap:6px;">
                     <div class="item">
                         <div class="item-info">
-                            <p>Score</p>
+                            <p>{{ __('Score') }}</p>
                             <span>{{ $attempt->score ?? 0 }} / {{ $attempt->total ?? 0 }}</span>
                         </div>
                     </div>
                     <div class="item">
                         <div class="item-info">
-                            <p>Result</p>
+                            <p>{{ __('Result') }}</p>
                             @php($isPassed = ($attempt->score ?? 0) >= ($assessment->pass_mark ?? 0))
-                            <span>{{ $attempt->status === 'completed' ? ($isPassed ? 'Passed' : 'Needs Review') : 'In Progress' }}</span>
+                            <span>{{ $attempt->status === 'completed' ? ($isPassed ? __('Passed') : __('Needs Review')) : __('In Progress') }}</span>
                         </div>
                     </div>
                     <div class="item">
                         <div class="item-info">
-                            <p>Pass Mark</p>
+                            <p>{{ __('Pass Mark') }}</p>
                             <span>{{ $assessment->pass_mark ?? 0 }}</span>
                         </div>
                     </div>
                     <div class="item">
                         <div class="item-info">
-                            <p>Status</p>
+                            <p>{{ __('Status') }}</p>
                             <span>{{ $attempt->status }}</span>
                         </div>
                     </div>
                     <div class="item">
                         <div class="item-info">
-                            <p>Completed</p>
+                            <p>{{ __('Completed') }}</p>
                             <span>{{ $attempt->completed_at?->format('Y-m-d H:i') ?? '-' }}</span>
                         </div>
                     </div>
@@ -66,7 +66,7 @@
 
         <section class="panel">
             <div class="panel-header">
-                <h4>Answers</h4>
+                <h4>{{ __('Answers') }}</h4>
                 <span class="badge blue">{{ $questions->count() }} Questions</span>
             </div>
             <div class="panel-body">
@@ -78,7 +78,7 @@
                             <div class="panel-header">
                                 <h4>Question {{ $index + 1 }}</h4>
                                 <span class="badge {{ $answer?->is_correct ? 'green' : 'rose' }}">
-                                    {{ $answer?->is_correct ? 'Correct' : 'Incorrect' }}
+                                    {{ $answer?->is_correct ? __('Correct') : __('Incorrect') }}
                                 </span>
                             </div>
                             <div class="panel-body">
@@ -91,9 +91,9 @@
                                                 <p>{{ $option->option_text }}</p>
                                                 <span>
                                                     @if ($isSelected)
-                                                        Selected
+                                                        {{ __('Selected') }}
                                                     @elseif ($correct?->id === $option->id)
-                                                        Correct
+                                                        {{ __('Correct') }}
                                                     @else
                                                         -
                                                     @endif

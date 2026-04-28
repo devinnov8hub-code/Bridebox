@@ -98,7 +98,8 @@ body.auth-body::before {
     min-height: min(760px, 94vh);
 }
 
-.installer-shell .screen.role {
+.installer-shell .screen.role,
+.installer-shell .screen.choice {
     overflow-y: auto;
     padding: 36px;
 }
@@ -138,12 +139,14 @@ body.auth-body::before {
 }
 
 body[data-screen='splash'] #splash,
+body[data-screen='choice'] #choice,
 body[data-screen='role'] #role {
     opacity: 1;
     transform: translateY(0);
     pointer-events: auto;
 }
 
+body[data-screen='choice'] #splash,
 body[data-screen='role'] #splash {
     opacity: 0;
     transform: translateY(-10px);
@@ -226,7 +229,7 @@ body[data-screen='role'] #splash {
 
 .role-options {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
     gap: 16px;
     margin-top: 24px;
 }
@@ -271,6 +274,15 @@ body[data-screen='role'] #splash {
 
 .role-option.student .role-icon {
     background: linear-gradient(135deg, #4fbf9b, #2ea77c);
+}
+
+/* Installer mode specific icons */
+.role-option.school .role-icon {
+    background: linear-gradient(135deg, #3c5f9d, #2e5bb7);
+}
+
+.role-option.generic .role-icon {
+    background: linear-gradient(135deg, #7b5fd1, #d05fb1);
 }
 
 .role-text {
@@ -614,4 +626,20 @@ body[data-screen='role'] #splash {
         animation-iteration-count: 1 !important;
         transition-duration: 0.001ms !important;
     }
+}
+
+/* Additional installer icon SVG sizing and hover animation */
+.role-icon svg {
+    width: 28px;
+    height: 28px;
+    display: block;
+    transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.role-option:hover .role-icon {
+    transform: translateY(-4px) scale(1.04);
+}
+
+.role-option .role-icon {
+    transition: transform 0.28s cubic-bezier(.2,.9,.2,1), box-shadow 0.28s ease;
 }

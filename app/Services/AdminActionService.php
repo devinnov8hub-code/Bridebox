@@ -7,24 +7,13 @@ use Symfony\Component\Process\Process;
 
 class AdminActionService
 {
-    // Ordered list of php-fpm service names to try (newest first).
-    private const PHP_FPM_SERVICES = [
-        'php8.4-fpm',
-        'php8.3-fpm',
-        'php8.2-fpm',
-        'php8.1-fpm',
-        'php8.0-fpm',
-        'php-fpm',
-    ];
-
     private const ACTIONS = [
         'start_server' => [
             'label' => 'Start Server',
             'requires_sudo' => true,
             'steps' => [
                 ['systemctl', 'start', 'nginx'],
-                // php-fpm service name is resolved dynamically in execute()
-                ['systemctl', 'start', '__PHP_FPM__'],
+                ['systemctl', 'start', 'php-fpm'],
             ],
         ],
         'stop_server' => [
@@ -32,7 +21,7 @@ class AdminActionService
             'requires_sudo' => true,
             'steps' => [
                 ['systemctl', 'stop', 'nginx'],
-                ['systemctl', 'stop', '__PHP_FPM__'],
+                ['systemctl', 'stop', 'php-fpm'],
             ],
         ],
         'hotspot_on' => [
@@ -83,17 +72,12 @@ class AdminActionService
         }
 
         if (!$this->actionsEnabled()) {
-            return $this->fail(
-                'Admin actions are disabled. Add ADMIN_ACTIONS_ENABLED=true to your .env file.'
-            );
+            return $this->fail('Admin actions are disabled. Set ADMIN_ACTIONS_ENABLED=true to enable.');
         }
 
         $definition = self::ACTIONS[$action];
         if (!empty($definition['requires_sudo']) && !$this->sudoEnabled()) {
-            return $this->fail(
-                'Sudo actions are disabled. Add ADMIN_ACTIONS_ALLOW_SUDO=true to your .env file, ' .
-                'and ensure www-data has passwordless sudo for the required commands in /etc/sudoers.'
-            );
+            return $this->fail('Sudo actions are disabled. Configure sudoers and set ADMIN_ACTIONS_ALLOW_SUDO=true.');
         }
 
         if ($action === 'start_server') {
@@ -101,15 +85,6 @@ class AdminActionService
             if ($permissionCheck !== null) {
                 return $this->fail($permissionCheck);
             }
-        }
-
-        // Handle clear_logs specially — no shell steps needed.
-        if ($action === 'clear_logs') {
-            $logPath = storage_path('logs/laravel.log');
-            if (is_file($logPath)) {
-                file_put_contents($logPath, '');
-            }
-            return ['success' => true, 'message' => 'Logs cleared.'];
         }
 
         // Special handling for applying hotspot settings from storage
@@ -127,6 +102,7 @@ class AdminActionService
             }
 
             $steps = [];
+            // Create or update Hotspot using nmcli. Use dev wifi hotspot to (re)create.
             if ($password !== null && $password !== '') {
                 $steps[] = ['nmcli', 'dev', 'wifi', 'hotspot', 'ifname', 'wlan0', 'ssid', $ssid, 'password', $password];
             } else {
@@ -144,19 +120,13 @@ class AdminActionService
                 }
             }
 
-            return ['success' => true, 'message' => 'Hotspot settings applied.'];
+            return [
+                'success' => true,
+                'message' => 'Hotspot settings applied.',
+            ];
         }
 
-        // Resolve __PHP_FPM__ placeholder to the actual installed service name.
-        $phpFpmService = $this->resolvePhpFpmService();
-        $steps = array_map(function (array $step) use ($phpFpmService): array {
-            return array_map(
-                fn($part) => $part === '__PHP_FPM__' ? $phpFpmService : $part,
-                $step
-            );
-        }, $definition['steps']);
-
-        foreach ($steps as $step) {
+        foreach ($definition['steps'] as $step) {
             $result = $this->runStep($step, !empty($definition['requires_sudo']));
             if (!$result['success']) {
                 return $this->fail($result['message']);
@@ -210,20 +180,6 @@ class AdminActionService
         } catch (\Throwable $exception) {
             return $this->fail($this->formatCommandError($commandLine, $exception->getMessage()));
         }
-    }
-
-    private function resolvePhpFpmService(): string
-    {
-        foreach (self::PHP_FPM_SERVICES as $service) {
-            $process = new Process(['systemctl', 'list-units', '--full', '--all', '-t', 'service', '--no-pager', '--no-legend', $service . '.service']);
-            $process->setTimeout(3);
-            $process->run();
-            if ($process->isSuccessful() && trim($process->getOutput()) !== '') {
-                return $service;
-            }
-        }
-        // Fall back to the generic name and let systemctl surface the error.
-        return 'php-fpm';
     }
 
     private function checkSqliteWritable(): ?string

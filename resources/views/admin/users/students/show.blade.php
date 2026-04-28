@@ -6,15 +6,15 @@
     <main class="main">
         <header class="topbar">
             <div class="greeting">
-                <p class="eyebrow">Admin Student</p>
+                <p class="eyebrow">{{ __('Admin Student') }}</p>
                 <h1>{{ $student->name }}</h1>
-                <p class="subtext">View student details and manage actions.</p>
+                <p class="subtext">{{ __('View student details and manage actions.') }}</p>
             </div>
             <div class="actions">
-                <a class="btn ghost" href="{{ route('admin.users.students.index') }}">Back to Students</a>
+                <a class="btn ghost" href="{{ route('admin.users.students.index') }}">{{ __('Back to Students') }}</a>
                 <form action="{{ route('logout') }}" method="post">
                     @csrf
-                    <button class="btn primary" type="submit">Logout</button>
+                    <button class="btn primary" type="submit">{{ __('Logout') }}</button>
                 </form>
             </div>
         </header>
@@ -28,50 +28,50 @@
 
         <section class="panel">
             <div class="panel-header">
-                <h4>Student Details</h4>
-                <span class="badge {{ $student->is_active ? 'green' : 'rose' }}">{{ $student->is_active ? 'Active' : 'Disabled' }}</span>
+                <h4>{{ __('Student Details') }}</h4>
+                <span class="badge {{ $student->is_active ? 'green' : 'rose' }}">{{ $student->is_active ? __('Active') : __('Disabled') }}</span>
             </div>
             <div class="panel-body">
                 <div class="item-list" style="display:flex;flex-direction:column;gap:6px;">
                     <div class="item">
                         <div class="item-info">
-                            <p>Name</p>
+                            <p>{{ __('Name') }}</p>
                             <span>{{ $student->name }}</span>
                         </div>
                     </div>
                     <div class="item">
                         <div class="item-info">
-                            <p>Email</p>
+                            <p>{{ __('Email') }}</p>
                             <span>{{ $student->email }}</span>
                         </div>
                     </div>
                     <div class="item">
                         <div class="item-info">
-                            <p>Phone</p>
+                            <p>{{ __('Phone') }}</p>
                             <span>{{ $student->phone ?: '-' }}</span>
                         </div>
                     </div>
                     <div class="item">
                         <div class="item-info">
-                            <p>Class</p>
+                            <p>{{ __('Class') }}</p>
                             <span>{{ $student->schoolClass?->name ?? $student->studentProfile?->class ?? '-' }}</span>
                         </div>
                     </div>
                     <div class="item">
                         <div class="item-info">
-                            <p>Department</p>
+                            <p>{{ __('Department') }}</p>
                             <span>{{ $student->studentProfile?->department ?? '-' }}</span>
                         </div>
                     </div>
                     <div class="item">
                         <div class="item-info">
-                            <p>Admission ID</p>
+                            <p>{{ __('Admission ID') }}</p>
                             <span>{{ $student->studentProfile?->admission_id ?? '-' }}</span>
                         </div>
                     </div>
                     <div class="item">
                         <div class="item-info">
-                            <p>Created</p>
+                            <p>{{ __('Created') }}</p>
                             <span>{{ $student->created_at?->format('Y-m-d') ?? '-' }}</span>
                         </div>
                     </div>
@@ -91,30 +91,30 @@
 
         <section class="panel">
             <div class="panel-header">
-                <h4>Actions</h4>
-                <span class="badge gold">Manage</span>
+                <h4>{{ __('Actions') }}</h4>
+                    <span class="badge gold">{{ __('Manage') }}</span>
             </div>
             <div class="panel-body">
                 <div class="table-actions">
-                    <form method="post" action="{{ route('admin.users.impersonate', $student) }}" data-confirm="Login as this student?">
+                    <form method="post" action="{{ route('admin.users.impersonate', $student) }}" data-confirm="{{ __('Login as this student?') }}">
                         @csrf
-                        <button class="btn ghost btn-small" type="submit" @disabled(!$student->is_active)>Login As</button>
+                        <button class="btn ghost btn-small" type="submit" @disabled(!$student->is_active)>{{ __('Login As') }}</button>
                     </form>
-                    <a class="btn ghost btn-small" href="{{ route('admin.users.students.edit', $student) }}">Edit</a>
-                    <form method="post" action="{{ route('admin.users.toggle', $student) }}" data-confirm="Are you sure?">
+                    <a class="btn ghost btn-small" href="{{ route('admin.users.students.edit', $student) }}">{{ __('Edit') }}</a>
+                    <form method="post" action="{{ route('admin.users.toggle', $student) }}" data-confirm="{{ __('Are you sure?') }}">
                         @csrf
                         <button class="btn ghost btn-small" type="submit">
-                            {{ $student->is_active ? 'Disable' : 'Enable' }}
+                            {{ $student->is_active ? __('Disable') : __('Enable') }}
                         </button>
                     </form>
-                    <form method="post" action="{{ route('admin.users.reset', $student) }}" data-confirm="Reset password for this student?">
+                    <form method="post" action="{{ route('admin.users.reset', $student) }}" data-confirm="{{ __('Reset password for this student?') }}">
                         @csrf
-                        <button class="btn ghost btn-small" type="submit">Reset Password</button>
+                        <button class="btn ghost btn-small" type="submit">{{ __('Reset Password') }}</button>
                     </form>
-                    <form method="post" action="{{ route('admin.users.delete', $student) }}" data-confirm="Delete this student account?">
+                    <form method="post" action="{{ route('admin.users.delete', $student) }}" data-confirm="{{ __('Delete this student account?') }}">
                         @csrf
                         @method('delete')
-                        <button class="btn ghost btn-small" type="submit">Delete</button>
+                        <button class="btn ghost btn-small" type="submit">{{ __('Delete') }}</button>
                     </form>
                 </div>
             </div>
