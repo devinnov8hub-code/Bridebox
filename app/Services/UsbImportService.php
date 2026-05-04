@@ -11,27 +11,45 @@ use Symfony\Component\Process\Process;
 /**
  * UsbImportService
  *
- * Handles detection of removable USB drives, virus scanning (ClamAV),
- * and copying their contents into the local library, organised by file type.
+ * Detects removable USB drives and copies their contents into the local
+ * library, organised by file type (mp4 -> video/, mp3 -> audio/, pdf -> document/, etc.).
  *
- * Cross-platform: works on Linux (Raspberry Pi production) AND Windows
- * (developer test machines, where USB drives appear as drive letters E:, F:, etc.).
+ * The virus-scan step has been removed at the request of the hardware engineer.
+ * We rely on the BLOCKED_EXTENSIONS list to keep dangerous file types out.
+ *
+ * Cross-platform: Linux (Raspberry Pi production) AND Windows (developer testing).
  */
 class UsbImportService
 {
     public const LIBRARY_ROOT = 'library';
 
+    /**
+     * Dangerous file extensions that are never copied into the library,
+     * even if the user's USB stick contains them.
+     */
     private const BLOCKED_EXTENSIONS = [
         'exe', 'msi', 'bat', 'cmd', 'com', 'scr', 'pif', 'vbs', 'vbe',
         'js', 'jse', 'wsf', 'wsh', 'ps1', 'psm1', 'jar', 'reg', 'dll',
         'sys', 'app', 'sh', 'bash',
     ];
 
+    /**
+     * Per-file size cap (2 GB).
+     */
     private const MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024;
 
     /**
-     * Returns a list of currently mounted removable drives.
+     * Friendly label for each category folder (used in progress messages).
      */
+    private const CATEGORY_FOLDERS = [
+        'video'    => 'video folder',
+        'audio'    => 'audio folder',
+        'document' => 'document folder',
+        'image'    => 'image folder',
+        'archive'  => 'archive folder',
+        'other'    => 'other folder',
+    ];
+
     public function detectDrives(): array
     {
         if ($this->isWindows()) {
@@ -40,11 +58,26 @@ class UsbImportService
         return $this->detectDrivesLinux();
     }
 
+    /**
+     * Quick stats about a USB drive: file count, total bytes, breakdown by category.
+     * Logs a clear reason when the drive is unreadable so the engineer can fix permissions.
+     */
     public function inspectDrive(string $drivePath): array
     {
         $drivePath = $this->normalisePath($drivePath);
-        if (! is_dir($drivePath) || ! is_readable($drivePath)) {
-            return ['exists' => false, 'files' => 0, 'bytes' => 0, 'by_category' => []];
+
+        if (! is_dir($drivePath)) {
+            return ['exists' => false, 'files' => 0, 'bytes' => 0, 'by_category' => [], 'error' => 'not_found'];
+        }
+        if (! is_readable($drivePath)) {
+            Log::warning("USB inspect: drive {$drivePath} exists but is not readable by " . $this->currentProcessUser());
+            return ['exists' => true, 'files' => 0, 'bytes' => 0, 'by_category' => [], 'error' => 'permission_denied'];
+        }
+        // Fast sanity check: can we list the top-level entries?
+        $top = @scandir($drivePath);
+        if ($top === false) {
+            Log::warning("USB inspect: scandir failed on {$drivePath} for user " . $this->currentProcessUser());
+            return ['exists' => true, 'files' => 0, 'bytes' => 0, 'by_category' => [], 'error' => 'permission_denied'];
         }
 
         $files = 0;
@@ -84,6 +117,12 @@ class UsbImportService
         if (! is_dir($drivePath)) {
             return ['success' => false, 'message' => 'Drive not found: ' . $drivePath];
         }
+        if (! is_readable($drivePath)) {
+            return [
+                'success' => false,
+                'message' => "Drive {$drivePath} is mounted but is not readable by the web server (" . $this->currentProcessUser() . "). Ask the administrator to remount with read-everyone permissions, or run `sudo chmod -R a+rX " . escapeshellarg($drivePath) . "`.",
+            ];
+        }
 
         $current = $this->currentJob();
         if ($current && in_array($current['status'] ?? '', ['scanning', 'copying'], true)) {
@@ -105,10 +144,10 @@ class UsbImportService
             'copied_bytes' => 0,
             'current_file' => null,
             'current_category' => null,
+            'current_folder' => null,
             'started_at' => now()->toIso8601String(),
             'finished_at' => null,
             'errors' => [],
-            'scan' => ['status' => 'pending', 'engine' => null, 'message' => null],
         ];
         $this->writeJson($progressPath, $initial);
 
@@ -118,6 +157,10 @@ class UsbImportService
         return ['success' => true, 'job_id' => $jobId];
     }
 
+    /**
+     * The actual copy loop. Normally invoked from a detached worker
+     * (see launchWorker), but can be called inline for tests / debugging.
+     */
     public function runImport(string $jobId, string $drivePath, ?int $userId = null): void
     {
         $progressPath = $this->progressFilePath();
@@ -128,7 +171,19 @@ class UsbImportService
         };
 
         try {
-            $update(['status' => 'scanning', 'message' => 'Scanning files on USB…']);
+            // --- Step 1: enumerate files ------------------------------------
+            $update(['status' => 'scanning', 'message' => 'Reading files on USB…']);
+
+            // Pre-flight permission check so we fail fast with a useful message
+            if (! is_readable($drivePath) || @scandir($drivePath) === false) {
+                $update([
+                    'status' => 'error',
+                    'message' => "Cannot read {$drivePath}. The web server (" . $this->currentProcessUser() . ") has no permission. Run: sudo chmod -R a+rX " . escapeshellarg($drivePath),
+                    'finished_at' => now()->toIso8601String(),
+                ]);
+                return;
+            }
+
             $files = $this->collectFiles($drivePath);
             if (empty($files)) {
                 $update([
@@ -144,17 +199,7 @@ class UsbImportService
                 'total_bytes' => $totalBytes,
             ]);
 
-            $scanResult = $this->virusScan($drivePath);
-            $update(['scan' => $scanResult]);
-            if ($scanResult['status'] === 'infected') {
-                $update([
-                    'status' => 'aborted',
-                    'message' => 'Import aborted: virus detected on USB drive.',
-                    'finished_at' => now()->toIso8601String(),
-                ]);
-                return;
-            }
-
+            // --- Step 2: copy each file (NO virus scan) ---------------------
             $update(['status' => 'copying', 'message' => 'Copying files…']);
             $copiedFiles = 0;
             $copiedBytes = 0;
@@ -165,11 +210,20 @@ class UsbImportService
                     $info = $this->copySingleFile($file, $userId);
                     $copiedFiles++;
                     $copiedBytes += $file['size'];
+                    $folder = self::CATEGORY_FOLDERS[$info['category']] ?? ($info['category'] . ' folder');
                     $update([
                         'copied_files' => $copiedFiles,
                         'copied_bytes' => $copiedBytes,
                         'current_file' => $info['original_name'],
                         'current_category' => $info['category'],
+                        'current_folder' => $folder,
+                        'message' => sprintf(
+                            'Copying %s → %s (%d/%d)',
+                            $info['original_name'],
+                            $folder,
+                            $copiedFiles,
+                            count($files)
+                        ),
                     ]);
                 } catch (\Throwable $e) {
                     $errors[] = $file['name'] . ': ' . $e->getMessage();
@@ -184,6 +238,7 @@ class UsbImportService
                 'finished_at' => now()->toIso8601String(),
                 'current_file' => null,
                 'current_category' => null,
+                'current_folder' => null,
             ]);
         } catch (\Throwable $e) {
             Log::error('USB import job failed: ' . $e->getMessage());
@@ -200,13 +255,13 @@ class UsbImportService
         return $this->readJson($this->progressFilePath());
     }
 
+    /**
+     * @deprecated Virus scanning has been removed. Kept for backwards
+     * compatibility with the controller; always returns false.
+     */
     public function isClamAvAvailable(): bool
     {
-        $cmd = $this->isWindows() ? 'where clamscan' : 'which clamscan';
-        $p = Process::fromShellCommandline($cmd);
-        $p->setTimeout(3);
-        try { $p->run(); } catch (\Throwable $e) { return false; }
-        return $p->isSuccessful() && trim($p->getOutput()) !== '';
+        return false;
     }
 
     // -------------------------------------------------------------------------
@@ -216,23 +271,27 @@ class UsbImportService
     private function collectFiles(string $drivePath): array
     {
         $out = [];
-        $iter = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($drivePath, \FilesystemIterator::SKIP_DOTS),
-            \RecursiveIteratorIterator::LEAVES_ONLY,
-            \RecursiveIteratorIterator::CATCH_GET_CHILD
-        );
-        foreach ($iter as $f) {
-            if (! $f->isFile()) continue;
-            $ext = strtolower($f->getExtension());
-            if ($this->isBlockedExtension($ext)) continue;
-            $size = $f->getSize();
-            if ($size <= 0 || $size > self::MAX_FILE_SIZE) continue;
-            $out[] = [
-                'path' => $f->getRealPath() ?: $f->getPathname(),
-                'name' => $f->getFilename(),
-                'ext' => $ext,
-                'size' => $size,
-            ];
+        try {
+            $iter = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($drivePath, \FilesystemIterator::SKIP_DOTS),
+                \RecursiveIteratorIterator::LEAVES_ONLY,
+                \RecursiveIteratorIterator::CATCH_GET_CHILD
+            );
+            foreach ($iter as $f) {
+                if (! $f->isFile()) continue;
+                $ext = strtolower($f->getExtension());
+                if ($this->isBlockedExtension($ext)) continue;
+                $size = $f->getSize();
+                if ($size <= 0 || $size > self::MAX_FILE_SIZE) continue;
+                $out[] = [
+                    'path' => $f->getRealPath() ?: $f->getPathname(),
+                    'name' => $f->getFilename(),
+                    'ext' => $ext,
+                    'size' => $size,
+                ];
+            }
+        } catch (\Throwable $e) {
+            Log::warning('USB collectFiles iteration failed: ' . $e->getMessage());
         }
         return $out;
     }
@@ -282,8 +341,9 @@ class UsbImportService
             'size_bytes' => $file['size'],
             'hash_sha256' => $hash,
             'source_drive' => dirname($file['path']),
-            'scan_status' => ImportedContent::SCAN_CLEAN,
-            'scan_message' => null,
+            // Virus scanning removed -> mark all files as "skipped" so the column is honest.
+            'scan_status' => ImportedContent::SCAN_SKIPPED,
+            'scan_message' => 'Virus scanning disabled.',
             'imported_by' => $userId,
             'imported_at' => now(),
         ]);
@@ -291,47 +351,6 @@ class UsbImportService
         return [
             'original_name' => $record->original_name,
             'category' => $record->category,
-        ];
-    }
-
-    private function virusScan(string $drivePath): array
-    {
-        if (! $this->isClamAvAvailable()) {
-            return [
-                'status' => ImportedContent::SCAN_SKIPPED,
-                'engine' => null,
-                'message' => 'ClamAV (clamscan) is not installed. Skipped virus scan; extension blocklist still enforced.',
-            ];
-        }
-
-        $cmd = ['clamscan', '-r', '--no-summary', '-i', $drivePath];
-        $p = new Process($cmd);
-        $p->setTimeout(60 * 30);
-        try {
-            $p->run();
-        } catch (\Throwable $e) {
-            return [
-                'status' => ImportedContent::SCAN_ERROR,
-                'engine' => 'clamav',
-                'message' => 'Scan failed to start: ' . $e->getMessage(),
-            ];
-        }
-
-        $exit = $p->getExitCode();
-        if ($exit === 0) {
-            return ['status' => ImportedContent::SCAN_CLEAN, 'engine' => 'clamav', 'message' => 'No threats detected.'];
-        }
-        if ($exit === 1) {
-            return [
-                'status' => ImportedContent::SCAN_INFECTED,
-                'engine' => 'clamav',
-                'message' => trim($p->getOutput()) ?: 'Virus signature detected.',
-            ];
-        }
-        return [
-            'status' => ImportedContent::SCAN_ERROR,
-            'engine' => 'clamav',
-            'message' => trim($p->getErrorOutput()) ?: 'Scan completed with errors.',
         ];
     }
 
@@ -364,7 +383,7 @@ class UsbImportService
                 foreach (glob($root . '/*') as $entry) {
                     if (! is_dir($entry)) continue;
                     foreach (glob($entry . '/*') ?: [$entry] as $candidate) {
-                        if (is_dir($candidate) && is_readable($candidate)) {
+                        if (is_dir($candidate)) {
                             $total = (int) @disk_total_space($candidate);
                             if ($total <= 0) continue;
                             $out[] = [
@@ -382,62 +401,34 @@ class UsbImportService
         return $out;
     }
 
-    /**
-     * Windows USB detection — uses three strategies in order of reliability:
-     *   1) PowerShell Get-CimInstance (works on PS 5+ which ships with Win10/11)
-     *   2) PowerShell Get-Volume     (fallback when CIM not available)
-     *   3) Drive-letter enumeration  (last resort: just scan A:..Z: with PHP)
-     *
-     * The third strategy is guaranteed to work as long as PHP can see the drive,
-     * even if PowerShell is locked down by group policy.
-     */
     private function detectDrivesWindows(): array
     {
-        // Strategy 1: PowerShell + Get-CimInstance (most reliable on Win10/11)
         $out = $this->windowsDetectViaCim();
         if (! empty($out)) return $out;
-
-        // Strategy 2: PowerShell Get-Volume
         $out = $this->windowsDetectViaGetVolume();
         if (! empty($out)) return $out;
-
-        // Strategy 3: Brute-force drive letter scan (always works)
         return $this->windowsDetectByDriveLetter();
     }
 
     private function windowsDetectViaCim(): array
     {
-        // Use a base64-encoded command to dodge all quoting hell.
-        // Equivalent script:
-        //   Get-CimInstance Win32_LogicalDisk -Filter "DriveType=2" |
-        //     Select-Object DeviceID,VolumeName,Size,FreeSpace |
-        //     ConvertTo-Json -Compress
         $script = "Get-CimInstance Win32_LogicalDisk -Filter \"DriveType=2\" | Select-Object DeviceID,VolumeName,Size,FreeSpace | ConvertTo-Json -Compress";
         $encoded = base64_encode(mb_convert_encoding($script, 'UTF-16LE'));
         $p = Process::fromShellCommandline("powershell -NoProfile -EncodedCommand " . $encoded);
         $p->setTimeout(8);
-        try { $p->run(); } catch (\Throwable $e) {
-            Log::debug('USB CIM detection threw: ' . $e->getMessage());
-            return [];
-        }
+        try { $p->run(); } catch (\Throwable $e) { return []; }
         if (! $p->isSuccessful()) return [];
-
         $json = trim($p->getOutput());
         if ($json === '') return [];
-
         $data = json_decode($json, true);
         if ($data === null) return [];
-
-        // Single object => wrap in array
         if (isset($data['DeviceID'])) $data = [$data];
-
         $out = [];
         foreach ($data as $row) {
             $deviceId = $row['DeviceID'] ?? '';
             if ($deviceId === '') continue;
-            $path = $deviceId . '\\';
             $out[] = [
-                'path' => $path,
+                'path' => $deviceId . '\\',
                 'label' => ($row['VolumeName'] ?? '') !== '' ? $row['VolumeName'] : $deviceId,
                 'size_human' => $this->humanBytes((int) ($row['Size'] ?? 0)),
                 'free_human' => $this->humanBytes((int) ($row['FreeSpace'] ?? 0)),
@@ -452,27 +443,19 @@ class UsbImportService
         $encoded = base64_encode(mb_convert_encoding($script, 'UTF-16LE'));
         $p = Process::fromShellCommandline("powershell -NoProfile -EncodedCommand " . $encoded);
         $p->setTimeout(8);
-        try { $p->run(); } catch (\Throwable $e) {
-            Log::debug('USB Get-Volume detection threw: ' . $e->getMessage());
-            return [];
-        }
+        try { $p->run(); } catch (\Throwable $e) { return []; }
         if (! $p->isSuccessful()) return [];
-
         $json = trim($p->getOutput());
         if ($json === '') return [];
-
         $data = json_decode($json, true);
         if ($data === null) return [];
-
         if (isset($data['DriveLetter'])) $data = [$data];
-
         $out = [];
         foreach ($data as $row) {
             $letter = $row['DriveLetter'] ?? '';
             if ($letter === '') continue;
-            $path = $letter . ':\\';
             $out[] = [
-                'path' => $path,
+                'path' => $letter . ':\\',
                 'label' => ($row['Label'] ?? '') !== '' ? $row['Label'] : ($letter . ':'),
                 'size_human' => $this->humanBytes((int) ($row['Size'] ?? 0)),
                 'free_human' => $this->humanBytes((int) ($row['Free'] ?? 0)),
@@ -481,34 +464,19 @@ class UsbImportService
         return $out;
     }
 
-    /**
-     * Final fallback: walks every drive letter and uses pure PHP to detect
-     * which ones are removable. Uses a CMD ping-style trick: a removable
-     * drive's total space is normally LESS than the system drive's total.
-     * We can't perfectly distinguish removable from fixed without WMI/CIM,
-     * but for a dev test machine, exposing ALL non-system drives lets the
-     * user pick their USB stick from the list.
-     */
     private function windowsDetectByDriveLetter(): array
     {
         $out = [];
-        // Skip A: and B: (legacy floppy), and the system drive (usually C:).
-        // The user's USB will appear as D:, E:, F:, etc.
         $systemDrive = strtoupper(getenv('SystemDrive') ?: 'C:');
         $systemLetter = $systemDrive[0] ?? 'C';
-
         foreach (range('A', 'Z') as $letter) {
             if ($letter === $systemLetter) continue;
             $path = $letter . ':\\';
-            // is_dir() is enough to detect a mounted drive on Windows.
             if (! @is_dir($path)) continue;
             $total = @disk_total_space($path);
             if ($total === false || $total <= 0) continue;
             $free = (int) @disk_free_space($path);
-
-            // Try to grab the volume label using `vol` command (built into Windows).
             $label = $this->windowsVolumeLabel($letter) ?: ($letter . ':');
-
             $out[] = [
                 'path' => $path,
                 'label' => $label,
@@ -525,10 +493,7 @@ class UsbImportService
         $p->setTimeout(2);
         try { $p->run(); } catch (\Throwable $e) { return ''; }
         if (! $p->isSuccessful()) return '';
-        $output = $p->getOutput();
-        // Output looks like:  Volume in drive E is MYUSB
-        //                  or Volume in drive E has no label.
-        if (preg_match('/Volume in drive .* is (.+)/i', $output, $m)) {
+        if (preg_match('/Volume in drive .* is (.+)/i', $p->getOutput(), $m)) {
             return trim($m[1]);
         }
         return '';
@@ -560,11 +525,17 @@ class UsbImportService
                 $sp->disableOutput();
                 $sp->start();
             } else {
-                $p->disableOutput();
-                $p->start();
+                // Linux: detach via setsid so the worker outlives the request
+                $shell = 'setsid ' . implode(' ', array_map(fn($a) => escapeshellarg($a), $cmd)) . ' > /dev/null 2>&1 &';
+                $sp = Process::fromShellCommandline($shell, base_path());
+                $sp->setTimeout(null);
+                $sp->setIdleTimeout(null);
+                $sp->disableOutput();
+                $sp->start();
             }
         } catch (\Throwable $e) {
             Log::error('Failed to launch USB import worker: ' . $e->getMessage());
+            // Last-ditch fallback: run inline (will block the HTTP response, but at least works)
             $this->runImport($jobId, $drivePath, $userId);
         }
     }
@@ -619,7 +590,6 @@ class UsbImportService
     private function normalisePath(string $path): string
     {
         $trimmed = rtrim($path, "/\\");
-        // On Windows, "C:" alone is meaningless — it has to be "C:\".
         if ($this->isWindows() && preg_match('/^[A-Za-z]:$/', $trimmed)) {
             return $trimmed . '\\';
         }
@@ -630,6 +600,16 @@ class UsbImportService
     {
         if (defined('PHP_BINARY') && PHP_BINARY) return PHP_BINARY;
         return $this->isWindows() ? 'php.exe' : 'php';
+    }
+
+    private function currentProcessUser(): string
+    {
+        if (function_exists('posix_geteuid') && function_exists('posix_getpwuid')) {
+            $info = @posix_getpwuid(@posix_geteuid());
+            if (is_array($info) && isset($info['name'])) return $info['name'];
+        }
+        $env = getenv('USER') ?: getenv('USERNAME');
+        return $env ?: 'unknown';
     }
 
     private function guessMime(string $path, string $ext): ?string
