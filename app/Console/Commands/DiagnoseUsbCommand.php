@@ -50,7 +50,7 @@ class DiagnoseUsbCommand extends Command
         }
 
         $this->newLine();
-        $this->info('ClamAV available: ' . ($service->isClamAvAvailable() ? 'yes' : 'no'));
+        $this->info(' available: ' . ($service->isClamAvAvailable() ? 'yes' : 'no'));
         return self::SUCCESS;
     }
 
