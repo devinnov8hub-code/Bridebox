@@ -9,12 +9,14 @@ use App\Models\LessonCompletion;
 use App\Models\SchoolClass;
 use App\Models\Subject;
 use App\Models\Topic;
+use App\Support\InstallMode;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 
 class StudentLessonController extends Controller
 {
+    public function __construct(private InstallMode $mode) {}
     public function index(Request $request): View
     {
         $student = $request->user();
@@ -24,18 +26,20 @@ class StudentLessonController extends Controller
         $subjectId = $request->integer('subject_id');
         $topicId = $request->integer('topic_id');
 
+        $isGeneric = $this->mode->isGeneric();
+
         $subjects = Subject::query()
             ->whereIn('id', Topic::query()
-                ->where('school_class_id', $classId)
+                ->when(!$isGeneric, fn ($q) => $q->where('school_class_id', $classId))
                 ->select('subject_id')
                 ->distinct())
-            ->when($sectionId, fn ($query) => $query->where('section_id', $sectionId))
+            ->when($sectionId && !$isGeneric, fn ($query) => $query->where('section_id', $sectionId))
             ->orderBy('name')
             ->get();
 
         $topics = collect();
-        if ($subjectId && $classId) {
-            if ($sectionId) {
+        if ($subjectId && ($isGeneric || $classId)) {
+            if (!$isGeneric && $sectionId) {
                 $subjectMatches = Subject::query()
                     ->whereKey($subjectId)
                     ->where('section_id', $sectionId)
@@ -46,9 +50,9 @@ class StudentLessonController extends Controller
                 }
             }
         }
-        if ($subjectId && $classId) {
+        if ($subjectId && ($isGeneric || $classId)) {
             $topics = Topic::query()
-                ->where('school_class_id', $classId)
+                ->when(!$isGeneric, fn ($q) => $q->where('school_class_id', $classId))
                 ->where('subject_id', $subjectId)
                 ->orderBy('title')
                 ->get();
@@ -56,8 +60,10 @@ class StudentLessonController extends Controller
 
         $lessons = Lesson::query()
             ->with(['topic.subject', 'topic.schoolClass'])
-            ->whereHas('topic', function ($query) use ($classId) {
-                $query->where('school_class_id', $classId);
+            ->when(!$isGeneric, function ($query) use ($classId) {
+                $query->whereHas('topic', function ($q) use ($classId) {
+                    $q->where('school_class_id', $classId);
+                });
             })
             ->when($subjectId, function ($query) use ($subjectId) {
                 $query->whereHas('topic', function ($topicQuery) use ($subjectId) {
@@ -106,7 +112,7 @@ class StudentLessonController extends Controller
         $quizzes = Assessment::query()
             ->where('type', Assessment::TYPE_QUIZ)
             ->where('topic_id', $lesson->topic_id)
-            ->where('school_class_id', $student->school_class_id)
+            ->when(!$this->mode->isGeneric(), fn ($q) => $q->where('school_class_id', $student->school_class_id))
             ->orderBy('title')
             ->get();
 
@@ -140,6 +146,9 @@ class StudentLessonController extends Controller
 
     private function assertLessonAccess(?int $classId, Lesson $lesson): void
     {
+        if ($this->mode->isGeneric()) {
+            return;
+        }
         if (!$classId || $lesson->topic?->school_class_id !== $classId) {
             abort(404);
         }

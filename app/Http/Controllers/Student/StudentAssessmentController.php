@@ -7,6 +7,7 @@ use App\Models\Assessment;
 use App\Models\AssessmentAttempt;
 use App\Models\AssessmentAttemptAnswer;
 use App\Models\AssessmentQuestion;
+use App\Support\InstallMode;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -14,6 +15,7 @@ use Illuminate\View\View;
 
 class StudentAssessmentController extends Controller
 {
+    public function __construct(private InstallMode $mode) {}
     public function index(Request $request, string $type): View
     {
         $this->assertType($type);
@@ -29,7 +31,7 @@ class StudentAssessmentController extends Controller
                     ->where('status', 'completed');
             }])
             ->where('type', $type)
-            ->where('school_class_id', $classId)
+            ->when(!$this->mode->isGeneric(), fn ($q) => $q->where('school_class_id', $classId))
             ->when($search !== '', function ($query) use ($search) {
                 $query->where('title', 'like', "%{$search}%");
             })
@@ -245,6 +247,9 @@ class StudentAssessmentController extends Controller
 
     private function assertAssessmentAccess(?int $classId, Assessment $assessment): void
     {
+        if ($this->mode->isGeneric()) {
+            return;
+        }
         if (!$classId || $assessment->school_class_id !== $classId) {
             abort(404);
         }

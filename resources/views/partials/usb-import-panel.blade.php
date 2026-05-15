@@ -83,9 +83,11 @@
             {{-- Imported library --------------------------------- --}}
             @if ($showLibrary)
                 <div>
-                    <p class="usb-section-title" style="margin-top:.5rem;">
-                        <i class="fa-solid fa-folder-open"></i> {{ __('Available content') }}
-                    </p>
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.6rem;">
+                        <p class="usb-section-title" style="margin-top:.5rem;">
+                            <i class="fa-solid fa-folder-open"></i> {{ __('Available content') }}
+                        </p>
+                    </div>
                     <div class="usb-library-grid" data-usb-library></div>
                     <div class="usb-empty" data-usb-library-empty hidden>
                         <i class="fa-solid fa-box-open"></i>

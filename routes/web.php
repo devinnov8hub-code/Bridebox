@@ -193,11 +193,11 @@ Route::prefix('dashboard/admin/topics')
 
         Route::get('/{topic}/lessons', [AdminTopicLessonController::class, 'index'])->name('lessons.index');
         Route::get('/{topic}/lessons/create', [AdminTopicLessonController::class, 'create'])->name('lessons.create');
+        Route::post('/{topic}/lessons', [AdminTopicLessonController::class, 'store'])->name('lessons.store');
         Route::get('/{topic}/lessons/{lesson}', [AdminTopicLessonController::class, 'show'])->name('lessons.show');
         Route::get('/{topic}/lessons/{lesson}/edit', [AdminTopicLessonController::class, 'edit'])->name('lessons.edit');
         Route::put('/{topic}/lessons/{lesson}', [AdminTopicLessonController::class, 'update'])->name('lessons.update');
         Route::get('/{topic}/lessons/{lesson}/file', [AdminTopicLessonController::class, 'file'])->name('lessons.file');
-        Route::post('/{topic}/lessons', [AdminTopicLessonController::class, 'store'])->name('lessons.store');
         Route::get('/{topic}/lessons/{lesson}/download', [AdminTopicLessonController::class, 'download'])->name('lessons.download');
         Route::delete('/{topic}/lessons/{lesson}', [AdminTopicLessonController::class, 'destroy'])->name('lessons.delete');
     });
@@ -441,6 +441,7 @@ Route::prefix('dashboard/teacher')
 Route::get('/dashboard/student', [StudentDashboardController::class, 'index'])
     ->middleware('role:student')
     ->name('dashboard.student');
+    
 Route::middleware(['auth'])->prefix('usb')->name('usb.')->group(function () {
     // Read-only listing of imported content (any authenticated user, incl. students)
     Route::get('/list',     [\App\Http\Controllers\UsbImportController::class, 'index'])->name('list');

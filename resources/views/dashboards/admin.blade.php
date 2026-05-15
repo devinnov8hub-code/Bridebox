@@ -132,91 +132,14 @@
             </div>
         </section>
 
-        <section class="panel">
-            <div class="panel-header">
-                <h4>{{ __('Admin Controls') }}</h4>
-                <span class="badge gold">{{ __('Actions') }}</span>
-            </div>
-            <div class="panel-body">
-                <!-- <div class="item">
-                    <div class="item-info">
-                        <p>Server</p>
-                        <span>nginx + php-fpm services</span>
-                    </div>
-                    <form class="toggle-form" data-admin-toggle data-action-on="{{ route('dashboard.admin.actions', ['action' => 'start_server']) }}" data-action-off="{{ route('dashboard.admin.actions', ['action' => 'stop_server']) }}" data-confirm-on="Start the server services?" data-confirm-off="Stop the server services?" method="post">
-                        @csrf
-                        <label class="toggle">
-                            <input type="checkbox" data-toggle-input data-toggle-target="server" @checked($serverRunning) @disabled($sudoBlocked)>
-                            <span class="toggle-track"></span>
-                        </label>
-                    </form>
-                </div> -->
-                <div class="item">
-                    <div class="item-info">
-                        <p>{{ __('Hotspot Control') }}</p>
-                        <span>{{ __('Turn hotspot on/off') }}</span>
-                    </div>
-                    <form class="toggle-form" data-admin-toggle data-action-on="{{ route('dashboard.admin.actions', ['action' => 'hotspot_on']) }}" data-action-off="{{ route('dashboard.admin.actions', ['action' => 'hotspot_off']) }}" data-confirm-on="{{ __('Turn hotspot on?') }}" data-confirm-off="{{ __('Turn hotspot off?') }}" method="post">
-                        @csrf
-                        <label class="toggle">
-                            <input type="checkbox" data-toggle-input data-toggle-target="hotspot" @checked($hotspotOn) @disabled($sudoBlocked)>
-                            <span class="toggle-track"></span>
-                        </label>
-                    </form>
-                </div>
-                <div class="item">
-                    <div class="item-info">
-                        <p>{{ __('Power Actions') }}</p>
-                        <span>{{ __('Reboot or shutdown device') }}</span>
-                    </div>
-                    <div class="inline-actions">
-                        <form data-admin-action data-confirm="{{ __('Reboot the device now?') }}" action="{{ route('dashboard.admin.actions', ['action' => 'reboot']) }}" method="post">
-                            @csrf
-                            <button class="btn primary" type="submit" @disabled($sudoBlocked)>{{ __('Reboot') }}</button>
-                        </form>
-                        <form data-admin-action data-confirm="{{ __('Shutdown the device now?') }}" action="{{ route('dashboard.admin.actions', ['action' => 'shutdown']) }}" method="post">
-                            @csrf
-                            <button class="btn ghost" type="submit" @disabled($sudoBlocked)>{{ __('Shutdown') }}</button>
-                        </form>
-                    </div>
-                </div>
-                <div class="item">
-                    <div class="item-info">
-                        <p>{{ __('Hotspot Settings') }}</p>
-                        <span>{{ __('Save SSID and password for hotspot use') }}</span>
-                    </div>
-                    @php
-                        $hotspot_ssid = '';
-                        $hotspot_password = '';
-                        $hotspot_path = storage_path('app/hotspot.json');
-                        if (file_exists($hotspot_path)) {
-                            try {
-                                $raw = file_get_contents($hotspot_path);
-                                $json = json_decode($raw, true);
-                                if (is_array($json)) {
-                                    $hotspot_ssid = $json['ssid'] ?? '';
-                                    $hotspot_password = $json['password'] ?? '';
-                                }
-                            } catch (\Throwable $e) {
-                                // ignore read errors
-                            }
-                        }
-                    @endphp
-                    <form action="{{ route('dashboard.admin.settings') }}" method="post">
-                        @csrf
-                        <div style="display:flex;gap:8px;align-items:center;">
-                            <input name="hotspot_ssid" value="{{ old('hotspot_ssid', $hotspot_ssid) }}" placeholder="{{ __('SSID') }}" style="padding:8px;border-radius:8px;border:1px solid #ccc;">
-                            <input name="hotspot_password" value="{{ old('hotspot_password', $hotspot_password) }}" placeholder="{{ __('Password') }}" style="padding:8px;border-radius:8px;border:1px solid #ccc;">
-                            <button class="btn primary" type="submit">{{ __('Save') }}</button>
-                        </div>
-                    </form>
-                    <form data-admin-action data-confirm="{{ __('Apply hotspot settings to this device? This requires sudo and will modify network settings.') }}" action="{{ route('dashboard.admin.actions', ['action' => 'apply_hotspot_settings']) }}" method="post" style="margin-top:8px;">
-                        @csrf
-                        <button class="btn ghost" type="submit" @disabled($sudoBlocked)>{{ __('Apply to device') }}</button>
-                    </form>
-                </div>
-            </div>
-        </section>
+        {{-- ============================================================
+             USB CONTENT IMPORT
+             Replaces the entire previous "Admin Controls" panel
+             (Hotspot Control toggle + Reboot/Shutdown actions) and
+             the old SSID/password card. Power actions remain accessible
+             through the sidebar / system menu if needed.
+             ============================================================ --}}
+        @include('partials.usb-import-panel', ['variant' => 'admin', 'showLibrary' => true])
 
         <section class="panel">
             <div class="panel-header">
