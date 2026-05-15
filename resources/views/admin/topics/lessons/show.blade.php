@@ -11,6 +11,7 @@
                 <p class="subtext" style="color: white;">{{ $topic->title }} · {{ $lesson->created_at?->format('Y-m-d') ?? '-' }}</p>
             </div>
             <div class="actions">
+                <a class="btn ghost" href="{{ route('admin.topics.lessons.edit', [$topic, $lesson]) }}">{{ __('Edit') }}</a>
                 <a class="btn ghost" href="{{ route('admin.topics.lessons.index', $topic) }}">{{ __('Back to Lessons') }}</a>
                 <a class="btn ghost" href="{{ route('admin.topics.lessons.download', [$topic, $lesson]) }}">{{ __('Download') }}</a>
                 <form action="{{ route('admin.topics.lessons.delete', [$topic, $lesson]) }}" method="post" style="display:inline-block;">
@@ -29,7 +30,7 @@
             <div class="panel-body">
                 @if ($lesson->content)
                     <div class="lesson-content">
-                        {!! nl2br(e($lesson->content)) !!}
+                        {!! $lesson->content !!}
                     </div>
                 @else
                     <p class="text-muted">{{ __('No text content provided for this lesson.') }}</p>
@@ -38,7 +39,7 @@
                 @if ($lesson->file_path)
                     <div class="panel" style="margin-top:16px;">
                         <div class="panel-header">
-                            <h4>{{ __('Lesson File') }}</h4>
+                            <h4>{{ __('Lesson Resource') }}</h4>
                             <span class="badge blue">{{ $lesson->file_type ?: 'file' }}</span>
                         </div>
                         <div class="panel-body">

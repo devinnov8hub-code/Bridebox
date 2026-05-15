@@ -80,7 +80,7 @@
                                     <td>{{ $lesson->title }}</td>
                                     <td>{{ $lesson->topic?->title ?? '-' }}</td>
                                     <td>{{ $lesson->topic?->subject?->name ?? '-' }}</td>
-                                    <td>{{ $lesson->content ? Str::limit($lesson->content, 50) : '-' }}</td>
+                                    <td>{{ $lesson->content ? Str::limit(html_entity_decode(strip_tags($lesson->content), ENT_QUOTES | ENT_HTML5, 'UTF-8'), 50) : '-' }}</td>
                                     <td>{{ $lesson->file_name ?: '-' }}</td>
                                     <td>{{ $lesson->created_at?->format('Y-m-d') ?? '-' }}</td>
                                     <td>

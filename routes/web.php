@@ -44,7 +44,17 @@ use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'landing')->name('landing');
 
+// Public course browser (generic mode only — controller redirects if not generic)
+Route::prefix('courses')->name('courses.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Courses\CoursesController::class, 'index'])->name('index');
+    Route::get('/{subject}', [\App\Http\Controllers\Courses\CoursesController::class, 'show'])->name('show');
+    Route::get('/{subject}/{topic}/{lesson}', [\App\Http\Controllers\Courses\CoursesController::class, 'lesson'])->name('lesson');
+    Route::get('/{subject}/{topic}/{lesson}/file', [\App\Http\Controllers\Courses\CoursesController::class, 'file'])->name('lesson.file');
+    Route::get('/{subject}/{topic}/{lesson}/download', [\App\Http\Controllers\Courses\CoursesController::class, 'download'])->name('lesson.download');
+});
+
 Route::get('/install', [\App\Http\Controllers\InstallController::class, 'show'])->name('install.show');
+Route::get('/install/school', [\App\Http\Controllers\InstallController::class, 'showSchool'])->name('install.school.show');
 Route::post('/install', [\App\Http\Controllers\InstallController::class, 'store'])->name('install.store');
 Route::post('/install/generic', [\App\Http\Controllers\InstallController::class, 'storeGeneric'])->name('install.generic.store');
 Route::get('/install/generic', [\App\Http\Controllers\InstallController::class, 'showGeneric'])->name('install.generic.show');
@@ -183,6 +193,8 @@ Route::prefix('dashboard/admin/topics')
         Route::get('/{topic}/lessons', [AdminTopicLessonController::class, 'index'])->name('lessons.index');
         Route::get('/{topic}/lessons/create', [AdminTopicLessonController::class, 'create'])->name('lessons.create');
         Route::get('/{topic}/lessons/{lesson}', [AdminTopicLessonController::class, 'show'])->name('lessons.show');
+        Route::get('/{topic}/lessons/{lesson}/edit', [AdminTopicLessonController::class, 'edit'])->name('lessons.edit');
+        Route::put('/{topic}/lessons/{lesson}', [AdminTopicLessonController::class, 'update'])->name('lessons.update');
         Route::get('/{topic}/lessons/{lesson}/file', [AdminTopicLessonController::class, 'file'])->name('lessons.file');
         Route::post('/{topic}/lessons', [AdminTopicLessonController::class, 'store'])->name('lessons.store');
         Route::get('/{topic}/lessons/{lesson}/download', [AdminTopicLessonController::class, 'download'])->name('lessons.download');

@@ -60,6 +60,9 @@
                         <div id="install-spinner" style="display:none;">Installing... please wait</div>
                     </div>
                 </form>
+                <p style="margin-top:16px;text-align:center;font-size:13px;">
+                    <a href="{{ route('install.show') }}" style="color:var(--accent,#3b6fd4);">← Back to mode selection</a>
+                </p>
                 <script>
                     (function(){
                         const form = document.getElementById('generic-install-form');

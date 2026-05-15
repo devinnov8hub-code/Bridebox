@@ -20,12 +20,24 @@
             <div class="greeting">
                 <p class="eyebrow">{{ __('Admin Control Room') }}</p>
                 <h1>{{ __('Hello,') }} {{ auth()->user()->name ?? __('Admin') }}.</h1>
-                <p class="subtext">{{ __('Monitor core services and manage system controls.') }}</p>
+                <p class="subtext">
+                    @if ($installMode->isGeneric())
+                        {{ __('Manage courses, topics and lessons for the learning library.') }}
+                    @else
+                        {{ __('Monitor core services and manage system controls.') }}
+                    @endif
+                </p>
             </div>
             <div class="actions">
+                @if ($installMode->isSchool())
                 <a class="btn ghost" href="{{ route('admin.users.teachers.index') }}">{{ __('Teachers') }}</a>
                 <a class="btn ghost" href="{{ route('admin.users.students.index') }}">{{ __('Students') }}</a>
                 <a class="btn ghost" href="{{ route('admin.classes.index') }}">{{ __('Classes') }}</a>
+                @endif
+                @if ($installMode->isGeneric())
+                <a class="btn ghost" href="{{ route('admin.subjects.index') }}">{{ __('Courses') }}</a>
+                <a class="btn ghost" href="{{ route('courses.index') }}">{{ __('View Public Site') }}</a>
+                @endif
                 <form action="{{ route('logout') }}" method="post">
                     @csrf
                     <button class="btn primary" type="submit">{{ __('Logout') }}</button>
@@ -213,6 +225,7 @@
             </div>
             <div class="panel-body">
                 <section class="quick-tabs" style="padding:0;">
+                    @if ($installMode->isSchool())
                     <a class="tab" style="--accent: #4a7bd1; --d: 0.05s;" href="{{ route('admin.classes.index') }}">
                         <div class="tab-icon">
                             <i class="fa-solid fa-people-roof" aria-hidden="true"></i>
@@ -240,12 +253,13 @@
                             <span>{{ $stats['students'] ?? 0 }}</span>
                         </div>
                     </a>
+                    @endif
                     <a class="tab" style="--accent: #f2b84b; --d: 0.2s;" href="{{ route('admin.subjects.index') }}">
                         <div class="tab-icon">
                             <i class="fa-solid fa-book" aria-hidden="true"></i>
                         </div>
                         <div>
-                            <p>{{ __('Subjects') }}</p>
+                            <p>{{ $installMode->isGeneric() ? __('Courses') : __('Subjects') }}</p>
                             <span>{{ $stats['subjects'] ?? 0 }}</span>
                         </div>
                     </a>
@@ -298,6 +312,7 @@
             </div>
         </section>
 
+        @if ($installMode->isSchool())
         <section class="panel">
             <div class="panel-header">
                 <h4>{{ __('Sections Overview') }}</h4>
@@ -321,6 +336,7 @@
                 </section>
             </div>
         </section>
+        @endif
 
     </main>
 @endsection

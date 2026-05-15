@@ -54,7 +54,7 @@
                                 <tr data-row-href="{{ route('teacher.topics.lessons.show', [$topic, $lesson]) }}" style="cursor:pointer;">
                                     <td>{{ $lessons->firstItem() + $index }}</td>
                                     <td>{{ $lesson->title }}</td>
-                                    <td>{{ $lesson->content ? Str::limit($lesson->content, 60) : '-' }}</td>
+                                    <td>{{ $lesson->content ? Str::limit(html_entity_decode(strip_tags($lesson->content), ENT_QUOTES | ENT_HTML5, 'UTF-8'), 60) : '-' }}</td>
                                     <td>{{ $lesson->file_name ?: '-' }}</td>
                                     <td>{{ $lesson->created_at?->format('Y-m-d') ?? '-' }}</td>
                                     <td>

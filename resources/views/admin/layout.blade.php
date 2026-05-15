@@ -7,7 +7,9 @@
     <link rel="icon" type="image/png" href="{{ asset('assets/images/favicon.png') }}">
     <link rel="apple-touch-icon" href="{{ asset('assets/images/favicon.png') }}">
     <link rel="stylesheet" href="{{ asset('assets/vendor/fontawesome/css/all.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/vendor/quill/quill.snow.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/editor.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/bootstrap-alerts.css') }}">
 </head>
 <body data-toolbar-label="{{ __('Filter') }}">
@@ -29,6 +31,7 @@
                     <i class="fa-solid fa-house" aria-hidden="true"></i>
                     <span>{{ __('Home') }}</span>
                 </a>
+                @if ($installMode->isSchool())
                 <a class="nav-item {{ (request()->routeIs('admin.users.teachers.*') || $navSection === 'teachers') ? 'active' : '' }}" href="{{ route('admin.users.teachers.index') }}" aria-label="Manage teachers">
                     <i class="fa-solid fa-chalkboard-user" aria-hidden="true"></i>
                     <span>{{ __('Teachers') }}</span>
@@ -41,14 +44,17 @@
                     <i class="fa-solid fa-people-roof" aria-hidden="true"></i>
                     <span>{{ __('Classes') }}</span>
                 </a>
+                @endif
                 <a class="nav-item {{ (request()->routeIs('admin.subjects.*') || $navSection === 'subjects') ? 'active' : '' }}" href="{{ route('admin.subjects.index') }}" aria-label="Manage subjects">
                     <i class="fa-solid fa-book" aria-hidden="true"></i>
-                    <span>{{ __('Subjects') }}</span>
+                    <span>{{ $installMode->isGeneric() ? __('Courses') : __('Subjects') }}</span>
                 </a>
+                @if ($installMode->isSchool())
                 <a class="nav-item {{ (request()->routeIs('admin.departments.*') || $navSection === 'departments') ? 'active' : '' }}" href="{{ route('admin.departments.index') }}" aria-label="Manage departments">
                     <i class="fa-solid fa-building-columns" aria-hidden="true"></i>
                     <span>{{ __('Departments') }}</span>
                 </a>
+                @endif
                 <a class="nav-item {{ (request()->routeIs('admin.topics.*') || $navSection === 'topics') ? 'active' : '' }}" href="{{ route('admin.topics.index') }}" aria-label="Manage topics">
                     <i class="fa-solid fa-list-check" aria-hidden="true"></i>
                     <span>{{ __('Topics') }}</span>
@@ -101,6 +107,8 @@
     <script src="{{ asset('assets/js/admin-actions.js') }}"></script>
     <script src="{{ asset('assets/js/admin-dashboard.js') }}"></script>
     <script src="{{ asset('assets/js/dashboard.js') }}"></script>
+    <script src="{{ asset('assets/vendor/quill/quill.js') }}"></script>
+    <script src="{{ asset('assets/js/editor.js') }}"></script>
     @stack('scripts')
 </body>
 </html>

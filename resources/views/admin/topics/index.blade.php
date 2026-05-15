@@ -8,7 +8,7 @@
             <div class="greeting">
                 <p class="eyebrow">{{ __('Admin') }}</p>
                 <h1>{{ __('Topics') }}</h1>
-                <p class="subtext">{{ __('Create and manage topics by class and subject.') }}</p>
+                <p class="subtext">{{ $installMode->isGeneric() ? __('Create and manage topics by course.') : __('Create and manage topics by class and subject.') }}</p>
             </div>
             <div class="actions">
                 <a class="btn primary" href="{{ route('admin.topics.create') }}">{{ __('Add Topic') }}</a>
@@ -37,14 +37,16 @@
                     @php($hasFilters = $search || $selectedClassId || $selectedSubjectId)
                     <form class="search-form" method="get" action="{{ route('admin.topics.index') }}">
                         <input class="search-input" type="text" name="q" placeholder="{{ __('Search by title') }}" value="{{ $search }}">
+                        @if ($installMode->isSchool())
                         <select class="search-input" name="class_id">
                             <option value="" @selected(!$selectedClassId)>{{ __('All classes') }}</option>
                             @foreach ($classes as $class)
                                 <option value="{{ $class->id }}" @selected($selectedClassId == $class->id)>{{ $class->name }}</option>
                             @endforeach
                         </select>
+                        @endif
                         <select class="search-input" name="subject_id">
-                            <option value="" @selected(!$selectedSubjectId)>{{ __('All subjects') }}</option>
+                            <option value="" @selected(!$selectedSubjectId)>{{ $installMode->isGeneric() ? __('All courses') : __('All subjects') }}</option>
                             @foreach ($subjects as $subject)
                                 <option value="{{ $subject->id }}" @selected($selectedSubjectId == $subject->id)>{{ $subject->name }}</option>
                             @endforeach
@@ -62,8 +64,10 @@
                         <thead>
                             <tr>
                                 <th>{{ __('Title') }}</th>
+                                @if ($installMode->isSchool())
                                 <th>{{ __('Class') }}</th>
-                                <th>{{ __('Subject') }}</th>
+                                @endif
+                                <th>{{ $installMode->isGeneric() ? __('Course') : __('Subject') }}</th>
                                 <th>{{ __('Description') }}</th>
                                 <th>{{ __('Created') }}</th>
                                 <th>{{ __('Actions') }}</th>
@@ -73,7 +77,9 @@
                             @forelse ($topics as $topic)
                                 <tr>
                                     <td>{{ $topic->title }}</td>
+                                    @if ($installMode->isSchool())
                                     <td>{{ $topic->schoolClass?->name ?? '-' }}</td>
+                                    @endif
                                     <td>{{ $topic->subject?->name ?? '-' }}</td>
                                     <td>{{ Str::limit($topic->description, 60) }}</td>
                                     <td>{{ $topic->created_at?->format('Y-m-d') ?? '-' }}</td>
@@ -91,7 +97,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td class="table-empty" colspan="6">{{ __('No topics found.') }}</td>
+                                    <td class="table-empty" colspan="{{ $installMode->isGeneric() ? 5 : 6 }}">{{ __('No topics found.') }}</td>
                                 </tr>
                             @endforelse
                         </tbody>

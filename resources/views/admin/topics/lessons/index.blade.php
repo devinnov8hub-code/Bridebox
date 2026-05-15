@@ -55,12 +55,13 @@
                                     <td>
                                         <a href="{{ route('admin.topics.lessons.show', [$topic, $lesson]) }}">{{ $lesson->title }}</a>
                                     </td>
-                                    <td>{{ $lesson->content ? Str::limit($lesson->content, 60) : '-' }}</td>
+                                    <td>{{ $lesson->content ? Str::limit(html_entity_decode(strip_tags($lesson->content), ENT_QUOTES | ENT_HTML5, 'UTF-8'), 60) : '-' }}</td>
                                     <td>{{ $lesson->created_at?->format('Y-m-d') ?? '-' }}</td>
                                     <td>
                                         <div class="table-actions">
+                                            <a class="btn ghost btn-small" href="{{ route('admin.topics.lessons.edit', [$topic, $lesson]) }}">{{ __('Edit') }}</a>
                                             @if ($lesson->file_path)
-                                                <a class="btn ghost btn-small" href="{{ route('admin.topics.lessons.download', [$topic, $lesson]) }}">{{ __('Download') }}</a>
+                                                <a class="btn ghost btn-small" href="{{ route('admin.topics.lessons.download', [$topic, $lesson]) }}">{{ __('Resource') }}</a>
                                             @endif
                                             <a class="btn ghost btn-small" href="{{ route('admin.assignments.create', ['lesson_id' => $lesson->id]) }}">{{ __('Assignments') }}</a>
                                             <form method="post" action="{{ route('admin.topics.lessons.delete', [$topic, $lesson]) }}" data-confirm="{{ __('Delete this lesson?') }}" style="display:inline-block;">

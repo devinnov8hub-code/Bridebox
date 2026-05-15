@@ -35,7 +35,7 @@
                         </div>
                         <div class="role-text">
                             <div class="role-title">School</div>
-                            <div class="role-sub">Complete school installer — sections, classes and academic seeding tailored for schools.</div>
+                            <div class="role-sub">Complete school installer - sections, classes and academic seeding tailored for schools.</div>
                         </div>
                         <div class="role-arrow">›</div>
                     </a>
@@ -50,7 +50,7 @@
                         </div>
                         <div class="role-text">
                             <div class="role-title">Generic learning</div>
-                            <div class="role-sub">Lightweight mode for organisations or public devices — demo courses and import content quickly.</div>
+                            <div class="role-sub">Lightweight mode for organisations or public devices - demo courses and import content quickly.</div>
                         </div>
                         <div class="role-arrow">›</div>
                     </a>

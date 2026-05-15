@@ -30,7 +30,7 @@ class AdminTopicLessonController extends Controller
     public function create(Topic $topic): View
     {
         return view('admin.topics.lessons.create', [
-            'topic' => $topic,
+            'topic' => $topic->load('subject'),
         ]);
     }
 
@@ -147,6 +147,72 @@ class AdminTopicLessonController extends Controller
             'topic' => $topic,
             'lesson' => $lesson->load(['topic.subject', 'topic.schoolClass']),
         ]);
+    }
+
+    public function edit(Topic $topic, Lesson $lesson): View
+    {
+        $this->assertLessonTopic($topic, $lesson);
+
+        return view('admin.topics.lessons.edit', [
+            'topic' => $topic,
+            'lesson' => $lesson,
+        ]);
+    }
+
+    public function update(Request $request, Topic $topic, Lesson $lesson): RedirectResponse
+    {
+        $this->assertLessonTopic($topic, $lesson);
+
+        $data = $request->validate([
+            'title' => 'required|string|max:191',
+            'content' => 'nullable|string',
+            'file' => 'nullable|file|max:204800|mimes:pdf,mp4,webm,ogg,mov,mkv',
+            'remove_file' => 'nullable|boolean',
+        ]);
+
+        $content = trim((string) ($data['content'] ?? ''));
+        $newFile = $request->file('file');
+        $removeFile = !empty($data['remove_file']);
+
+        // Must have content or an existing/new file
+        $willHaveFile = $newFile || (!$removeFile && $lesson->file_path);
+        if ($content === '' && !$willHaveFile) {
+            return back()
+                ->withErrors(['content' => 'Provide lesson text or upload a file.'])
+                ->withInput();
+        }
+
+        $updateData = [
+            'title' => $data['title'],
+            'content' => $content !== '' ? $content : null,
+        ];
+
+        if ($removeFile && $lesson->file_path) {
+            Storage::disk('local')->delete($lesson->file_path);
+            $updateData['file_path'] = null;
+            $updateData['file_name'] = null;
+            $updateData['file_type'] = null;
+        }
+
+        if ($newFile) {
+            if ($lesson->file_path) {
+                Storage::disk('local')->delete($lesson->file_path);
+            }
+            $originalName = $newFile->getClientOriginalName();
+            $extension = $newFile->getClientOriginalExtension();
+            $slug = Str::slug(substr($data['title'], 0, 120));
+            $storedName = ($slug ?: 'lesson') . '-' . $lesson->id . ($extension ? '.' . $extension : '');
+            $filePath = $newFile->storeAs('lessons', $storedName, 'local');
+            $updateData['file_path'] = $filePath;
+            $updateData['file_name'] = $originalName;
+            $updateData['file_type'] = $newFile->getClientMimeType();
+        }
+
+        $lesson->update($updateData);
+
+        return redirect()
+            ->route('admin.topics.lessons.index', $topic)
+            ->with(['status' => 'success', 'message' => 'Lesson updated.']);
     }
 
     public function destroy(Topic $topic, Lesson $lesson): RedirectResponse

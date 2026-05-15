@@ -73,7 +73,7 @@
                         <div class="item-card-body">
                             <h3 class="item-card-title">{{ $lesson->title }}</h3>
                             @if ($lesson->content)
-                                <p class="item-card-desc">{{ Str::limit(strip_tags($lesson->content), 90) }}</p>
+                                <p class="item-card-desc">{{ Str::limit(html_entity_decode(strip_tags($lesson->content), ENT_QUOTES | ENT_HTML5, 'UTF-8'), 90) }}</p>
                             @endif
                         </div>
                         <div class="item-card-footer">

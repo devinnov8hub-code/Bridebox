@@ -35,6 +35,22 @@
                         @enderror
                     </div>
 
+                    @if ($installMode->isGeneric())
+                        {{-- Generic mode: no class concept, show all courses as a plain select --}}
+                        <input type="hidden" name="school_class_id" value="{{ $classes->first()?->id }}">
+                        <div class="form-field">
+                            <label for="subject_id">{{ __('Course') }}</label>
+                            <select id="subject_id" name="subject_id" required>
+                                <option value="" disabled @selected(!old('subject_id'))>{{ __('Select a course') }}</option>
+                                @foreach ($subjects as $subject)
+                                    <option value="{{ $subject->id }}" @selected(old('subject_id') == $subject->id)>{{ $subject->name }}</option>
+                                @endforeach
+                            </select>
+                            @error('subject_id')
+                                <span class="form-error">{{ $message }}</span>
+                            @enderror
+                        </div>
+                    @else
                     <div class="form-field">
                         <label for="school_class_id">{{ __('Class') }}</label>
                         <select id="school_class_id" name="school_class_id" required>
@@ -51,12 +67,13 @@
                     <div class="form-field">
                         <label for="subject_id">{{ __('Subject') }}</label>
                         <select id="subject_id" name="subject_id" required data-subjects-url="{{ route('admin.subjects.by-class') }}" data-selected-subject="{{ old('subject_id') }}">
-                            <option value="" disabled @selected(!old('subject_id'))>Select a class first</option>
+                            <option value="" disabled @selected(!old('subject_id'))>{{ __('Select a class first') }}</option>
                         </select>
                         @error('subject_id')
                             <span class="form-error">{{ $message }}</span>
                         @enderror
                     </div>
+                    @endif
 
                     <div class="form-field form-field-full">
                         <label for="description">{{ __('Description (optional)') }}</label>
@@ -75,6 +92,7 @@
     </main>
 @endsection
 
+@if ($installMode->isSchool())
 @push('scripts')
     <script>
         const classSelect = document.getElementById('school_class_id');
@@ -99,7 +117,7 @@
                         credentials: 'same-origin',
                     });
                     const data = response.ok ? await response.json() : [];
-                    let options = '<option value="" disabled>Select a subject</option>';
+                    let options = '<option value="" disabled>{{ __('Select a subject') }}</option>';
                     data.forEach((subject) => {
                         const selected = selectedSubjectId && String(subject.id) === String(selectedSubjectId) ? 'selected' : '';
                         options += `<option value="${subject.id}" ${selected}>${subject.name}</option>`;
@@ -117,3 +135,4 @@
         }
     </script>
 @endpush
+@endif

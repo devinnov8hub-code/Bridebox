@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Models\Topic;
 use App\Models\SchoolClass;
 use App\Models\Subject;
+use App\Support\InstallMode;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -54,8 +55,10 @@ class AdminTopicController extends Controller
 
     public function create(): View
     {
+        $isGeneric = app(InstallMode::class)->isGeneric();
         return view('admin.topics.create', [
-            'classes' => SchoolClass::orderBy('name')->get(),
+            'classes'  => SchoolClass::orderBy('name')->get(),
+            'subjects' => $isGeneric ? Subject::orderBy('name')->get() : collect(),
         ]);
     }
 
@@ -86,9 +89,11 @@ class AdminTopicController extends Controller
 
     public function edit(Topic $topic): View
     {
+        $isGeneric = app(InstallMode::class)->isGeneric();
         return view('admin.topics.edit', [
-            'topic' => $topic->load(['schoolClass', 'subject']),
-            'classes' => SchoolClass::orderBy('name')->get(),
+            'topic'    => $topic->load(['schoolClass', 'subject']),
+            'classes'  => SchoolClass::orderBy('name')->get(),
+            'subjects' => $isGeneric ? Subject::orderBy('name')->get() : collect(),
         ]);
     }
 

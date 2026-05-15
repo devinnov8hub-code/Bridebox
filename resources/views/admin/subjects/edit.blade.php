@@ -1,17 +1,17 @@
 @extends('admin.layout')
 
-@section('title', __('Edit Subject'))
+@section('title', $installMode->isGeneric() ? __('Edit Course') : __('Edit Subject'))
 
 @section('main')
     <main class="main">
         <header class="topbar">
             <div class="greeting">
                 <p class="eyebrow">{{ __('Admin') }}</p>
-                <h1>{{ __('Edit Subject') }}</h1>
-                <p class="subtext">{{ __('Update subject details for a section.') }}</p>
+                <h1>{{ $installMode->isGeneric() ? __('Edit Course') : __('Edit Subject') }}</h1>
+                <p class="subtext">{{ $installMode->isGeneric() ? __('Update course details.') : __('Update subject details for a section.') }}</p>
             </div>
             <div class="actions">
-                <a class="btn ghost" href="{{ route('admin.subjects.index') }}">{{ __('Back to Subjects') }}</a>
+                <a class="btn ghost" href="{{ route('admin.subjects.index') }}">{{ $installMode->isGeneric() ? __('Back to Courses') : __('Back to Subjects') }}</a>
                 <form action="{{ route('logout') }}" method="post">
                     @csrf
                     <button class="btn primary" type="submit">{{ __('Logout') }}</button>
@@ -21,7 +21,7 @@
 
         <section class="panel">
             <div class="panel-header">
-                <h4>{{ __('Subject Details') }}</h4>
+                <h4>{{ $installMode->isGeneric() ? __('Course Details') : __('Subject Details') }}</h4>
                 <span class="badge gold">{{ __('Required') }}</span>
             </div>
             <div class="panel-body">
@@ -36,6 +36,7 @@
                         @enderror
                     </div>
 
+                    @if ($installMode->isSchool())
                     <div class="form-field">
                         <label for="section_id">{{ __('Section') }}</label>
                         <select id="section_id" name="section_id" required>
@@ -48,6 +49,7 @@
                             <span class="form-error">{{ $message }}</span>
                         @enderror
                     </div>
+                    @endif
 
                     <div class="form-field form-field-full">
                         <label for="description">{{ __('Description (optional)') }}</label>

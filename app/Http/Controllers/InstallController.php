@@ -18,17 +18,16 @@ class InstallController extends Controller
             return redirect()->route('landing');
         }
 
-        $mode = $request->query('mode');
+        return view('install-mode');
+    }
 
-        // if school mode explicitly requested, show the existing installer form
-        if ($mode === 'school') {
-            return view('install', [
-                'sections' => $this->defaultSections(),
-            ]);
+    public function showSchool(): View|RedirectResponse
+    {
+        if ($this->isInstalled()) {
+            return redirect()->route('landing');
         }
 
-        // default: show choice screen (install view handles choice display)
-        return view('install', [
+        return view('install-school', [
             'sections' => $this->defaultSections(),
         ]);
     }

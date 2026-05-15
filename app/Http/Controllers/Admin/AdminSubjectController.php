@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Models\SchoolClass;
 use App\Models\Section;
 use App\Models\Subject;
+use App\Support\InstallMode;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -49,13 +50,18 @@ class AdminSubjectController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
+        $generic = app(InstallMode::class)->isGeneric();
+
         $data = $request->validate([
             'name' => 'required|string|max:191',
             'description' => 'nullable|string',
-            'section_id' => 'required|integer|exists:sections,id',
+            'section_id' => $generic ? 'nullable' : 'required|integer|exists:sections,id',
         ]);
 
         $data['code'] = Str::slug($data['name']);
+        if ($generic) {
+            $data['section_id'] = null;
+        }
 
         Subject::create($data);
 
@@ -75,13 +81,18 @@ class AdminSubjectController extends Controller
 
     public function update(Request $request, Subject $subject): RedirectResponse
     {
+        $generic = app(InstallMode::class)->isGeneric();
+
         $data = $request->validate([
             'name' => 'required|string|max:191',
             'description' => 'nullable|string',
-            'section_id' => 'required|integer|exists:sections,id',
+            'section_id' => $generic ? 'nullable' : 'required|integer|exists:sections,id',
         ]);
 
         $data['code'] = Str::slug($data['name']);
+        if ($generic) {
+            $data['section_id'] = null;
+        }
 
         $subject->update($data);
 
@@ -108,16 +119,22 @@ class AdminSubjectController extends Controller
             return response()->json([]);
         }
 
-        $class = SchoolClass::with('section')->find($classId);
-        if (!$class || !$class->section_id) {
+        $class = SchoolClass::find($classId);
+        if (!$class) {
             return response()->json([]);
         }
 
-        $subjects = Subject::query()
-            ->where('section_id', $class->section_id)
-            ->orderBy('name')
-            ->get(['id', 'name']);
+        // In generic mode there are no sections — return all subjects
+        if (app(InstallMode::class)->isGeneric() || !$class->section_id) {
+            return response()->json(
+                Subject::orderBy('name')->get(['id', 'name'])
+            );
+        }
 
-        return response()->json($subjects);
+        return response()->json(
+            Subject::where('section_id', $class->section_id)
+                ->orderBy('name')
+                ->get(['id', 'name'])
+        );
     }
 }

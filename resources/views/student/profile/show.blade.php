@@ -79,23 +79,23 @@
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">{{ __('Phone') }}</span>
-                        <span class="detail-value">{{ $student->phone ?? '—' }}</span>
+                        <span class="detail-value">{{ $student->phone ?? '-' }}</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">{{ __('Admission ID') }}</span>
-                        <span class="detail-value">{{ $profile->admission_id ?? '—' }}</span>
+                        <span class="detail-value">{{ $profile->admission_id ?? '-' }}</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">{{ __('Department') }}</span>
-                        <span class="detail-value">{{ $profile->department ?? '—' }}</span>
+                        <span class="detail-value">{{ $profile->department ?? '-' }}</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">{{ __('Class') }}</span>
-                        <span class="detail-value">{{ $schoolClass?->name ?? '—' }}</span>
+                        <span class="detail-value">{{ $schoolClass?->name ?? '-' }}</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">{{ __('Section') }}</span>
-                        <span class="detail-value">{{ $schoolClass?->section?->name ?? '—' }}</span>
+                        <span class="detail-value">{{ $schoolClass?->section?->name ?? '-' }}</span>
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">{{ __('Account status') }}</span>

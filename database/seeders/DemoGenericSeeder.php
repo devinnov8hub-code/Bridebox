@@ -86,7 +86,10 @@ class DemoGenericSeeder extends Seeder
         $cls = SchoolClass::first();
         if ($cls) return $cls->id;
 
-        $created = SchoolClass::create(['name' => 'Generic']);
+        $created = SchoolClass::create([
+            'name' => 'Generic',
+            'slug' => 'generic',
+        ]);
         return $created->id;
     }
 }

@@ -2,23 +2,19 @@
 
 namespace App\Providers;
 
+use App\Support\InstallMode;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
-        //
+        $this->app->singleton(InstallMode::class);
     }
 
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
-        //
+        View::share('installMode', $this->app->make(InstallMode::class));
     }
 }

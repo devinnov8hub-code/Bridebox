@@ -122,7 +122,7 @@
                         <li>You have <strong>{{ $timeLimit }} minute{{ $timeLimit != 1 ? 's' : '' }}</strong> to complete this {{ $type }}. The timer is already running.</li>
                         <li>When time runs out, your {{ $type }} will be submitted automatically.</li>
                     @endif
-                    <li>Do <strong>not</strong> refresh or navigate away — this will forfeit your attempt with a score of zero.</li>
+                    <li>Do <strong>not</strong> refresh or navigate away - this will forfeit your attempt with a score of zero.</li>
                     <li>Click <strong>Submit</strong> once you have answered all questions.</li>
                 </ul>
             </div>

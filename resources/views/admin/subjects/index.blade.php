@@ -1,17 +1,17 @@
 @extends('admin.layout')
 
-@section('title', __('Subjects'))
+@section('title', $installMode->isGeneric() ? __('Courses') : __('Subjects'))
 
 @section('main')
     <main class="main">
         <header class="topbar">
             <div class="greeting">
                 <p class="eyebrow">{{ __('Admin') }}</p>
-                <h1>{{ __('Subjects') }}</h1>
-                <p class="subtext">{{ __('Create and manage subjects in the system.') }}</p>
+                <h1>{{ $installMode->isGeneric() ? __('Courses') : __('Subjects') }}</h1>
+                <p class="subtext">{{ $installMode->isGeneric() ? __('Manage courses in the learning library.') : __('Create and manage subjects in the system.') }}</p>
             </div>
             <div class="actions">
-                <a class="btn primary" href="{{ route('admin.subjects.create') }}">{{ __('Add Subject') }}</a>
+                <a class="btn primary" href="{{ route('admin.subjects.create') }}">{{ $installMode->isGeneric() ? __('Add Course') : __('Add Subject') }}</a>
                 <a class="btn ghost" href="{{ route('dashboard.admin') }}">{{ __('Back to Dashboard') }}</a>
                 <form action="{{ route('logout') }}" method="post">
                     @csrf
@@ -29,7 +29,7 @@
 
         <section class="panel table-panel">
             <div class="panel-header">
-                <h4>{{ __('Subjects List') }}</h4>
+                <h4>{{ $installMode->isGeneric() ? __('Courses List') : __('Subjects List') }}</h4>
                 <span class="badge blue">{{ $subjects->total() }}</span>
             </div>
             <div class="panel-body">
@@ -37,12 +37,14 @@
                     @php($hasFilters = $search || $selectedSectionId)
                     <form class="search-form" method="get" action="{{ route('admin.subjects.index') }}">
                         <input class="search-input" type="text" name="q" placeholder="{{ __('Search by name or code') }}" value="{{ $search }}">
+                        @if ($installMode->isSchool())
                         <select class="search-input" name="section_id">
                             <option value="" @selected(!$selectedSectionId)>{{ __('All sections') }}</option>
                             @foreach ($sections as $section)
                                 <option value="{{ $section->id }}" @selected($selectedSectionId == $section->id)>{{ $section->name }}</option>
                             @endforeach
                         </select>
+                        @endif
                         <button class="btn ghost btn-small" type="submit">{{ __('Search') }}</button>
                         @if ($hasFilters)
                             <a class="btn ghost btn-small" href="{{ route('admin.subjects.index') }}">{{ __('Clear') }}</a>
@@ -57,7 +59,9 @@
                             <tr>
                                 <th>{{ __('Name') }}</th>
                                 <th>{{ __('Slug') }}</th>
+                                @if ($installMode->isSchool())
                                 <th>{{ __('Section') }}</th>
+                                @endif
                                 <th>{{ __('Description') }}</th>
                                 <th>{{ __('Created') }}</th>
                                 <th>{{ __('Actions') }}</th>
@@ -68,7 +72,9 @@
                                 <tr>
                                     <td>{{ $subject->name }}</td>
                                     <td>{{ $subject->code ?: '-' }}</td>
+                                    @if ($installMode->isSchool())
                                     <td>{{ $subject->section?->name ?? '-' }}</td>
+                                    @endif
                                     <td>{{ Str::limit($subject->description, 60) }}</td>
                                     <td>{{ $subject->created_at?->format('Y-m-d') ?? '-' }}</td>
                                     <td>
