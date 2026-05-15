@@ -17,7 +17,7 @@
             </div>
             <p class="eyebrow">{{ __('BridgeBox') }}</p>
             <h1 style="margin-bottom:8px;">{{ __('Learning Library') }}</h1>
-            <p class="subtext" style="margin-bottom:32px;">{{ __('Browse and explore available courses — no account needed.') }}</p>
+            <p class="subtext" style="margin-bottom:32px;">{{ __('Browse and explore available courses - no account needed.') }}</p>
             <a class="btn primary" href="{{ route('courses.index') }}" style="display:inline-block;min-width:180px;">{{ __('Browse Courses') }}</a>
             <p style="margin-top:28px;font-size:12px;opacity:0.5;">
                 <a href="{{ route('login', ['role' => 'admin']) }}" style="color:inherit;">{{ __('Admin login') }}</a>

@@ -25,7 +25,7 @@
                 <span class="badge gold">{{ __('Required') }}</span>
             </div>
             <div class="panel-body">
-                <form class="form-grid" action="{{ route('admin.subjects.update', $subject) }}" method="post">
+                <form class="form-grid" action="{{ route('admin.subjects.update', $subject) }}" method="post" enctype="multipart/form-data">
                     @csrf
                     @method('put')
                     <div class="form-field">
@@ -55,6 +55,22 @@
                         <label for="description">{{ __('Description (optional)') }}</label>
                         <textarea id="description" name="description">{{ old('description', $subject->description) }}</textarea>
                         @error('description')
+                            <span class="form-error">{{ $message }}</span>
+                        @enderror
+                    </div>
+
+                    <div class="form-field">
+                        <label for="feature_image">{{ __('Feature Image') }}</label>
+                        @if ($subject->feature_image)
+                            <div style="margin-bottom:10px">
+                                <img src="{{ route('courses.subject.image', $subject) }}" alt="Current feature image" style="max-width:200px;max-height:120px;border-radius:8px;border:1px solid var(--border)">
+                            </div>
+                            <label style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:400;color:var(--muted);margin-bottom:8px;cursor:pointer">
+                                <input name="remove_image" type="checkbox" value="1"> {{ __('Remove current image') }}
+                            </label>
+                        @endif
+                        <input id="feature_image" name="feature_image" type="file" accept="image/jpeg,image/png,image/webp,image/gif">
+                        @error('feature_image')
                             <span class="form-error">{{ $message }}</span>
                         @enderror
                     </div>

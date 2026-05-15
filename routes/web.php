@@ -44,11 +44,12 @@ use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'landing')->name('landing');
 
-// Public course browser (generic mode only — controller redirects if not generic)
+// Public course browser (generic mode only - controller redirects if not generic)
 Route::prefix('courses')->name('courses.')->group(function () {
     Route::get('/', [\App\Http\Controllers\Courses\CoursesController::class, 'index'])->name('index');
     Route::get('/{subject}', [\App\Http\Controllers\Courses\CoursesController::class, 'show'])->name('show');
     Route::get('/{subject}/{topic}/{lesson}', [\App\Http\Controllers\Courses\CoursesController::class, 'lesson'])->name('lesson');
+    Route::get('/{subject}/image', [\App\Http\Controllers\Courses\CoursesController::class, 'image'])->name('subject.image');
     Route::get('/{subject}/{topic}/{lesson}/file', [\App\Http\Controllers\Courses\CoursesController::class, 'file'])->name('lesson.file');
     Route::get('/{subject}/{topic}/{lesson}/download', [\App\Http\Controllers\Courses\CoursesController::class, 'download'])->name('lesson.download');
 });

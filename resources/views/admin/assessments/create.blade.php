@@ -9,7 +9,7 @@
             <div class="greeting">
                 <p class="eyebrow">{{ __('Admin') }}</p>
                 <h1>Create {{ ucfirst($type) }}</h1>
-                <p class="subtext">Add a {{ $type }} tied to class, subject, and topic.</p>
+                <p class="subtext">Add a {{ $type }} tied to {{ $installMode->isGeneric() ? 'course and topic' : 'class, subject, and topic' }}.</p>
             </div>
             <div class="actions">
                 <a class="btn ghost" href="{{ route($routePrefix . '.index') }}">Back to {{ ucfirst($type) }}s</a>
@@ -36,6 +36,7 @@
                         @enderror
                     </div>
 
+                    @if ($installMode->isSchool())
                     <div class="form-field">
                         <label for="school_class_id">{{ __('Class') }}</label>
                         <select id="school_class_id" name="school_class_id" required>
@@ -48,12 +49,22 @@
                             <span class="form-error">{{ $message }}</span>
                         @enderror
                     </div>
+                    @endif
 
                     <div class="form-field">
-                        <label for="subject_id">{{ __('Subject') }}</label>
-                        <select id="subject_id" name="subject_id" required data-subjects-url="{{ route('admin.subjects.by-class') }}" data-selected-subject="{{ old('subject_id') }}">
-                            <option value="" disabled @selected(!old('subject_id'))>{{ __('Select a class first') }}</option>
-                        </select>
+                        <label for="subject_id">{{ $installMode->isGeneric() ? __('Course') : __('Subject') }}</label>
+                        @if ($installMode->isGeneric())
+                            <select id="subject_id" name="subject_id" required>
+                                <option value="" disabled @selected(!old('subject_id'))>{{ __('Select a course') }}</option>
+                                @foreach ($subjects as $subject)
+                                    <option value="{{ $subject->id }}" @selected(old('subject_id') == $subject->id)>{{ $subject->name }}</option>
+                                @endforeach
+                            </select>
+                        @else
+                            <select id="subject_id" name="subject_id" required data-subjects-url="{{ route('admin.subjects.by-class') }}" data-selected-subject="{{ old('subject_id') }}">
+                                <option value="" disabled @selected(!old('subject_id'))>{{ __('Select a class first') }}</option>
+                            </select>
+                        @endif
                         @error('subject_id')
                             <span class="form-error">{{ $message }}</span>
                         @enderror
@@ -119,6 +130,7 @@
 @endsection
 
 @push('scripts')
+    @if ($installMode->isSchool())
     <script>
         const subjectSelect = document.getElementById('subject_id');
         const classSelect = document.getElementById('school_class_id');
@@ -199,4 +211,41 @@
             loadSubjects(initialSubject);
         }
     </script>
+    @else
+    <script>
+        const subjectSelect = document.getElementById('subject_id');
+        const topicSelect = document.getElementById('topic_id');
+        if (subjectSelect && topicSelect) {
+            const loadTopics = async (selectedTopicId) => {
+                const subjectId = subjectSelect.value;
+                if (!subjectId) {
+                    topicSelect.innerHTML = '<option value="" disabled selected>Select a course first</option>';
+                    return;
+                }
+                topicSelect.innerHTML = '<option value="" disabled selected>Loading topics...</option>';
+                try {
+                    const url = new URL(topicSelect.dataset.topicsUrl, window.location.origin);
+                    url.searchParams.set('subject_id', subjectId);
+                    const response = await fetch(url.toString(), {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+                        credentials: 'same-origin',
+                    });
+                    const data = response.ok ? await response.json() : [];
+                    let options = '<option value="" disabled>Select a topic</option>';
+                    data.forEach((topic) => {
+                        const selected = selectedTopicId && String(topic.id) === String(selectedTopicId) ? 'selected' : '';
+                        options += `<option value="${topic.id}" ${selected}>${topic.title}</option>`;
+                    });
+                    topicSelect.innerHTML = options;
+                } catch (error) {
+                    topicSelect.innerHTML = '<option value="" disabled selected>Unable to load topics</option>';
+                }
+            };
+            subjectSelect.addEventListener('change', () => loadTopics(null));
+            if (subjectSelect.value) {
+                loadTopics(topicSelect.dataset.selectedTopic || null);
+            }
+        }
+    </script>
+    @endif
 @endpush

@@ -9,6 +9,7 @@ use App\Support\InstallMode;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 use App\Http\Controllers\Controller;
@@ -53,9 +54,10 @@ class AdminSubjectController extends Controller
         $generic = app(InstallMode::class)->isGeneric();
 
         $data = $request->validate([
-            'name' => 'required|string|max:191',
-            'description' => 'nullable|string',
-            'section_id' => $generic ? 'nullable' : 'required|integer|exists:sections,id',
+            'name'          => 'required|string|max:191',
+            'description'   => 'nullable|string',
+            'section_id'    => $generic ? 'nullable' : 'required|integer|exists:sections,id',
+            'feature_image' => 'nullable|image|max:4096',
         ]);
 
         $data['code'] = Str::slug($data['name']);
@@ -63,11 +65,18 @@ class AdminSubjectController extends Controller
             $data['section_id'] = null;
         }
 
+        if ($request->hasFile('feature_image')) {
+            $data['feature_image'] = $request->file('feature_image')
+                ->store('subjects', 'local');
+        } else {
+            unset($data['feature_image']);
+        }
+
         Subject::create($data);
 
         return redirect()->route('admin.subjects.index')->with([
             'message' => 'Subject created successfully.',
-            'status' => 'success',
+            'status'  => 'success',
         ]);
     }
 
@@ -84,9 +93,11 @@ class AdminSubjectController extends Controller
         $generic = app(InstallMode::class)->isGeneric();
 
         $data = $request->validate([
-            'name' => 'required|string|max:191',
-            'description' => 'nullable|string',
-            'section_id' => $generic ? 'nullable' : 'required|integer|exists:sections,id',
+            'name'          => 'required|string|max:191',
+            'description'   => 'nullable|string',
+            'section_id'    => $generic ? 'nullable' : 'required|integer|exists:sections,id',
+            'feature_image' => 'nullable|image|max:4096',
+            'remove_image'  => 'nullable|boolean',
         ]);
 
         $data['code'] = Str::slug($data['name']);
@@ -94,11 +105,26 @@ class AdminSubjectController extends Controller
             $data['section_id'] = null;
         }
 
+        if ($request->hasFile('feature_image')) {
+            // Delete old image if present
+            if ($subject->feature_image) {
+                Storage::disk('local')->delete($subject->feature_image);
+            }
+            $data['feature_image'] = $request->file('feature_image')
+                ->store('subjects', 'local');
+        } elseif ($request->boolean('remove_image') && $subject->feature_image) {
+            Storage::disk('local')->delete($subject->feature_image);
+            $data['feature_image'] = null;
+        } else {
+            unset($data['feature_image']);
+        }
+
+        unset($data['remove_image']);
         $subject->update($data);
 
         return redirect()->route('admin.subjects.index')->with([
             'message' => 'Subject updated successfully.',
-            'status' => 'success',
+            'status'  => 'success',
         ]);
     }
 
@@ -124,7 +150,7 @@ class AdminSubjectController extends Controller
             return response()->json([]);
         }
 
-        // In generic mode there are no sections — return all subjects
+        // In generic mode there are no sections - return all subjects
         if (app(InstallMode::class)->isGeneric() || !$class->section_id) {
             return response()->json(
                 Subject::orderBy('name')->get(['id', 'name'])

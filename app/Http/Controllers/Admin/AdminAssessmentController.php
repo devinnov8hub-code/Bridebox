@@ -6,6 +6,7 @@ use App\Models\Assessment;
 use App\Models\SchoolClass;
 use App\Models\Subject;
 use App\Models\Topic;
+use App\Support\InstallMode;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -63,46 +64,61 @@ class AdminAssessmentController extends Controller
     public function create(string $type): View
     {
         $this->assertType($type);
+        $isGeneric = app(InstallMode::class)->isGeneric();
 
         return view('admin.assessments.create', [
-            'classes' => SchoolClass::orderBy('name')->get(),
-            'type' => $type,
+            'classes'  => $isGeneric ? collect() : SchoolClass::orderBy('name')->get(),
+            'subjects' => $isGeneric ? Subject::orderBy('name')->get() : collect(),
+            'type'     => $type,
         ]);
     }
 
     public function store(Request $request, string $type): RedirectResponse
     {
         $this->assertType($type);
+        $isGeneric = app(InstallMode::class)->isGeneric();
 
         $data = $request->validate([
-            'title' => 'required|string|max:191',
-            'school_class_id' => 'required|integer|exists:school_classes,id',
-            'subject_id' => 'required|integer|exists:subjects,id',
-            'topic_id' => 'required|integer|exists:topics,id',
-            'description' => 'required|string',
+            'title'              => 'required|string|max:191',
+            'school_class_id'    => $isGeneric ? 'nullable|integer|exists:school_classes,id' : 'required|integer|exists:school_classes,id',
+            'subject_id'         => 'required|integer|exists:subjects,id',
+            'topic_id'           => 'required|integer|exists:topics,id',
+            'description'        => 'required|string',
             'time_limit_minutes' => 'required|integer|min:1|max:600',
-            'total_mark' => 'required|integer|min:1|max:1000',
-            'pass_mark' => 'required|integer|min:0|lte:total_mark',
-            'retake_attempts' => 'required|integer|min:0|max:100',
+            'total_mark'         => 'required|integer|min:1|max:1000',
+            'pass_mark'          => 'required|integer|min:0|lte:total_mark',
+            'retake_attempts'    => 'required|integer|min:0|max:100',
         ]);
 
-        $classSectionId = SchoolClass::whereKey($data['school_class_id'])->value('section_id');
-        $subjectSectionId = Subject::whereKey($data['subject_id'])->value('section_id');
-        if ($classSectionId && $subjectSectionId && $classSectionId !== $subjectSectionId) {
-            return back()->withErrors([
-                'subject_id' => 'The selected subject does not belong to the class section.',
-            ])->withInput();
-        }
+        if (!$isGeneric) {
+            $classSectionId   = SchoolClass::whereKey($data['school_class_id'])->value('section_id');
+            $subjectSectionId = Subject::whereKey($data['subject_id'])->value('section_id');
+            if ($classSectionId && $subjectSectionId && $classSectionId !== $subjectSectionId) {
+                return back()->withErrors([
+                    'subject_id' => 'The selected subject does not belong to the class section.',
+                ])->withInput();
+            }
 
-        $topicMatches = Topic::query()
-            ->whereKey($data['topic_id'])
-            ->where('subject_id', $data['subject_id'])
-            ->where('school_class_id', $data['school_class_id'])
-            ->exists();
-        if (!$topicMatches) {
-            return back()->withErrors([
-                'topic_id' => 'The selected topic does not belong to the subject and class.',
-            ])->withInput();
+            $topicMatches = Topic::query()
+                ->whereKey($data['topic_id'])
+                ->where('subject_id', $data['subject_id'])
+                ->where('school_class_id', $data['school_class_id'])
+                ->exists();
+            if (!$topicMatches) {
+                return back()->withErrors([
+                    'topic_id' => 'The selected topic does not belong to the subject and class.',
+                ])->withInput();
+            }
+        } else {
+            $topicMatches = Topic::query()
+                ->whereKey($data['topic_id'])
+                ->where('subject_id', $data['subject_id'])
+                ->exists();
+            if (!$topicMatches) {
+                return back()->withErrors([
+                    'topic_id' => 'The selected topic does not belong to the course.',
+                ])->withInput();
+            }
         }
 
         $data['type'] = $type;
@@ -113,18 +129,20 @@ class AdminAssessmentController extends Controller
             ->route($this->routePrefix($type) . '.index')
             ->with([
                 'message' => ucfirst($type) . ' created successfully.',
-                'status' => 'success',
+                'status'  => 'success',
             ]);
     }
 
     public function edit(Assessment $assessment, string $type): View
     {
         $this->assertType($type, $assessment);
+        $isGeneric = app(InstallMode::class)->isGeneric();
 
         return view('admin.assessments.edit', [
             'assessment' => $assessment->load(['schoolClass', 'subject', 'topic']),
-            'classes' => SchoolClass::orderBy('name')->get(),
-            'type' => $type,
+            'classes'    => $isGeneric ? collect() : SchoolClass::orderBy('name')->get(),
+            'subjects'   => $isGeneric ? Subject::orderBy('name')->get() : collect(),
+            'type'       => $type,
         ]);
     }
 
@@ -132,35 +150,49 @@ class AdminAssessmentController extends Controller
     {
         $this->assertType($type, $assessment);
 
+        $isGeneric = app(InstallMode::class)->isGeneric();
+
         $data = $request->validate([
-            'title' => 'required|string|max:191',
-            'school_class_id' => 'required|integer|exists:school_classes,id',
-            'subject_id' => 'required|integer|exists:subjects,id',
-            'topic_id' => 'required|integer|exists:topics,id',
-            'description' => 'required|string',
+            'title'              => 'required|string|max:191',
+            'school_class_id'    => $isGeneric ? 'nullable|integer|exists:school_classes,id' : 'required|integer|exists:school_classes,id',
+            'subject_id'         => 'required|integer|exists:subjects,id',
+            'topic_id'           => 'required|integer|exists:topics,id',
+            'description'        => 'required|string',
             'time_limit_minutes' => 'required|integer|min:1|max:600',
-            'total_mark' => 'required|integer|min:1|max:1000',
-            'pass_mark' => 'required|integer|min:0|lte:total_mark',
-            'retake_attempts' => 'required|integer|min:0|max:100',
+            'total_mark'         => 'required|integer|min:1|max:1000',
+            'pass_mark'          => 'required|integer|min:0|lte:total_mark',
+            'retake_attempts'    => 'required|integer|min:0|max:100',
         ]);
 
-        $classSectionId = SchoolClass::whereKey($data['school_class_id'])->value('section_id');
-        $subjectSectionId = Subject::whereKey($data['subject_id'])->value('section_id');
-        if ($classSectionId && $subjectSectionId && $classSectionId !== $subjectSectionId) {
-            return back()->withErrors([
-                'subject_id' => 'The selected subject does not belong to the class section.',
-            ])->withInput();
-        }
+        if (!$isGeneric) {
+            $classSectionId   = SchoolClass::whereKey($data['school_class_id'])->value('section_id');
+            $subjectSectionId = Subject::whereKey($data['subject_id'])->value('section_id');
+            if ($classSectionId && $subjectSectionId && $classSectionId !== $subjectSectionId) {
+                return back()->withErrors([
+                    'subject_id' => 'The selected subject does not belong to the class section.',
+                ])->withInput();
+            }
 
-        $topicMatches = Topic::query()
-            ->whereKey($data['topic_id'])
-            ->where('subject_id', $data['subject_id'])
-            ->where('school_class_id', $data['school_class_id'])
-            ->exists();
-        if (!$topicMatches) {
-            return back()->withErrors([
-                'topic_id' => 'The selected topic does not belong to the subject and class.',
-            ])->withInput();
+            $topicMatches = Topic::query()
+                ->whereKey($data['topic_id'])
+                ->where('subject_id', $data['subject_id'])
+                ->where('school_class_id', $data['school_class_id'])
+                ->exists();
+            if (!$topicMatches) {
+                return back()->withErrors([
+                    'topic_id' => 'The selected topic does not belong to the subject and class.',
+                ])->withInput();
+            }
+        } else {
+            $topicMatches = Topic::query()
+                ->whereKey($data['topic_id'])
+                ->where('subject_id', $data['subject_id'])
+                ->exists();
+            if (!$topicMatches) {
+                return back()->withErrors([
+                    'topic_id' => 'The selected topic does not belong to the course.',
+                ])->withInput();
+            }
         }
 
         $assessment->update($data);

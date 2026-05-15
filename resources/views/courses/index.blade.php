@@ -16,7 +16,12 @@
     @else
         <div class="course-grid">
             @foreach ($subjects as $subject)
-                <a class="course-card" href="{{ route('courses.show', $subject) }}">
+                <a class="course-card{{ $subject->feature_image ? ' course-card-has-image' : '' }}" href="{{ route('courses.show', $subject) }}">
+                    @if ($subject->feature_image)
+                        <div class="course-card-image">
+                            <img src="{{ route('courses.subject.image', $subject) }}" alt="{{ $subject->name }}">
+                        </div>
+                    @endif
                     @if ($subject->code)
                         <span class="course-code">{{ $subject->code }}</span>
                     @endif

@@ -9,7 +9,7 @@
             <div class="greeting">
                 <p class="eyebrow">{{ __('Admin') }}</p>
                 <h1>{{ ucfirst($type) }}s</h1>
-                <p class="subtext">Create and manage {{ $type }}s by class, subject, and topic.</p>
+                <p class="subtext">Create and manage {{ $type }}s by {{ $installMode->isGeneric() ? 'course and topic' : 'class, subject, and topic' }}.</p>
             </div>
             <div class="actions">
                 <a class="btn primary" href="{{ route($routePrefix . '.create') }}">Add {{ ucfirst($type) }}</a>
@@ -43,14 +43,16 @@
                     @php($hasFilters = $search || $selectedClassId || $selectedSubjectId || $selectedTopicId)
                     <form class="search-form" method="get" action="{{ route($routePrefix . '.index') }}">
                         <input class="search-input" type="text" name="q" placeholder="{{ __('Search by title') }}" value="{{ $search }}">
+                        @if ($installMode->isSchool())
                         <select class="search-input" name="class_id" id="class_id">
                             <option value="" @selected(!$selectedClassId)>{{ __('All classes') }}</option>
                             @foreach ($classes as $class)
                                 <option value="{{ $class->id }}" @selected($selectedClassId == $class->id)>{{ $class->name }}</option>
                             @endforeach
                         </select>
+                        @endif
                         <select class="search-input" name="subject_id" id="subject_id" data-subjects-url="{{ route('admin.subjects.by-class') }}" data-selected-subject="{{ $selectedSubjectId }}">
-                            <option value="" @selected(!$selectedSubjectId)>{{ __('All subjects') }}</option>
+                            <option value="" @selected(!$selectedSubjectId)>{{ $installMode->isGeneric() ? __('All courses') : __('All subjects') }}</option>
                             @foreach ($subjects as $subject)
                                 <option value="{{ $subject->id }}" @selected($selectedSubjectId == $subject->id)>{{ $subject->name }}</option>
                             @endforeach
@@ -72,8 +74,10 @@
                             <tr>
                                 <th>#</th>
                                 <th>{{ __('Title') }}</th>
+                                @if ($installMode->isSchool())
                                 <th>{{ __('Class') }}</th>
-                                <th>{{ __('Subject') }}</th>
+                                @endif
+                                <th>{{ $installMode->isGeneric() ? __('Course') : __('Subject') }}</th>
                                 <th>{{ __('Topic') }}</th>
                                 <th>{{ __('Time') }}</th>
                                 <th>{{ __('Actions') }}</th>
@@ -84,7 +88,9 @@
                                 <tr>
                                     <td>{{ $assessments->firstItem() + $index }}</td>
                                     <td>{{ $assessment->title }}</td>
+                                    @if ($installMode->isSchool())
                                     <td>{{ $assessment->schoolClass?->name ?? '-' }}</td>
+                                    @endif
                                     <td>{{ $assessment->subject?->name ?? '-' }}</td>
                                     <td>{{ $assessment->topic?->title ?? '-' }}</td>
                                     <td>{{ $assessment->time_limit_minutes ? $assessment->time_limit_minutes . ' min' : '-' }}</td>
@@ -103,7 +109,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td class="table-empty" colspan="7">No {{ $type }}s found.</td>
+                                    <td class="table-empty" colspan="{{ $installMode->isSchool() ? 7 : 6 }}">No {{ $type }}s found.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -119,30 +125,31 @@
 @push('scripts')
     <script>
         const subjectSelect = document.getElementById('subject_id');
-        const classSelect = document.getElementById('class_id');
         const topicSelect = document.getElementById('topic_id');
+        @if ($installMode->isSchool())
+        const classSelect = document.getElementById('class_id');
+        @endif
         if (subjectSelect && topicSelect) {
-            const defaultSubjectOptions = subjectSelect.innerHTML;
             const loadTopics = async (selectedTopicId) => {
                 const subjectId = subjectSelect.value;
+                @if ($installMode->isSchool())
                 const classId = classSelect ? classSelect.value : '';
+                @endif
                 if (!subjectId) {
                     topicSelect.innerHTML = '<option value="">All topics</option>';
                     return;
                 }
-
                 topicSelect.innerHTML = '<option value="">Loading topics...</option>';
                 try {
                     const url = new URL(topicSelect.dataset.topicsUrl, window.location.origin);
                     url.searchParams.set('subject_id', subjectId);
+                    @if ($installMode->isSchool())
                     if (classId) {
                         url.searchParams.set('class_id', classId);
                     }
+                    @endif
                     const response = await fetch(url.toString(), {
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'Accept': 'application/json',
-                        },
+                        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
                         credentials: 'same-origin',
                     });
                     const data = response.ok ? await response.json() : [];
@@ -157,30 +164,24 @@
                 }
             };
 
+            subjectSelect.addEventListener('change', () => loadTopics(null));
+            @if ($installMode->isSchool())
+            const defaultSubjectOptions = subjectSelect.innerHTML;
             const loadSubjects = async (selectedSubjectId) => {
-                if (!classSelect) {
-                    return;
-                }
-
+                if (!classSelect) return;
                 const classId = classSelect.value;
                 if (!classId) {
                     subjectSelect.innerHTML = defaultSubjectOptions;
-                    if (selectedSubjectId) {
-                        subjectSelect.value = selectedSubjectId;
-                    }
+                    if (selectedSubjectId) subjectSelect.value = selectedSubjectId;
                     await loadTopics(topicSelect.dataset.selectedTopic || null);
                     return;
                 }
-
                 subjectSelect.innerHTML = '<option value="">Loading subjects...</option>';
                 try {
                     const url = new URL(subjectSelect.dataset.subjectsUrl, window.location.origin);
                     url.searchParams.set('class_id', classId);
                     const response = await fetch(url.toString(), {
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'Accept': 'application/json',
-                        },
+                        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
                         credentials: 'same-origin',
                     });
                     const data = response.ok ? await response.json() : [];
@@ -196,14 +197,13 @@
                     await loadTopics(topicSelect.dataset.selectedTopic || null);
                 }
             };
-
-            subjectSelect.addEventListener('change', () => loadTopics(null));
-            if (classSelect) {
-                classSelect.addEventListener('change', () => loadSubjects(null));
-            }
-
+            classSelect.addEventListener('change', () => loadSubjects(null));
             const initialSubject = subjectSelect.dataset.selectedSubject || null;
             loadSubjects(initialSubject);
+            @else
+            const initialTopic = topicSelect.dataset.selectedTopic || null;
+            if (subjectSelect.value) loadTopics(initialTopic);
+            @endif
         }
     </script>
 @endpush

@@ -25,7 +25,7 @@
                 <span class="badge gold">{{ __('Required') }}</span>
             </div>
             <div class="panel-body">
-                <form class="form-grid" action="{{ route('admin.subjects.store') }}" method="post">
+                <form class="form-grid" action="{{ route('admin.subjects.store') }}" method="post" enctype="multipart/form-data">
                     @csrf
                     <div class="form-field">
                         <label for="name">{{ __('Name') }}</label>
@@ -58,8 +58,16 @@
                         @enderror
                     </div>
 
+                    <div class="form-field">
+                        <label for="feature_image">{{ __('Feature Image (optional)') }}</label>
+                        <input id="feature_image" name="feature_image" type="file" accept="image/jpeg,image/png,image/webp,image/gif">
+                        @error('feature_image')
+                            <span class="form-error">{{ $message }}</span>
+                        @enderror
+                    </div>
+
                     <div class="form-actions">
-                        <button class="btn primary" type="submit">{{ __('Create Subject') }}</button>
+                        <button class="btn primary" type="submit">{{ $installMode->isGeneric() ? __('Create Course') : __('Create Subject') }}</button>
                     </div>
                 </form>
             </div>

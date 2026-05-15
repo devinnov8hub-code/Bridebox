@@ -1,5 +1,5 @@
 /* -------------------------------------------------------
-   BridgeBox — Public Course Browser
+   BridgeBox - Public Course Browser
    ------------------------------------------------------- */
 
 /* Base uses DM Sans from auth.css font-faces (already declared if auth.css not loaded, reuse system stack) */
@@ -173,6 +173,21 @@ body.courses-body {
 }
 
 .course-card .course-meta span { display: flex; align-items: center; gap: 4px; }
+
+/* ── Course card feature image ── */
+.course-card-image {
+    margin: -22px -20px 10px;
+    border-radius: var(--radius) var(--radius) 0 0;
+    overflow: hidden;
+    height: 140px;
+}
+
+.course-card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
 
 /* ── Topic List ── */
 .topic-list {

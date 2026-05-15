@@ -60,6 +60,19 @@ class CoursesController extends Controller
         return view('courses.lesson', compact('subject', 'topic', 'lesson', 'prev', 'next'));
     }
 
+    public function image(Subject $subject): mixed
+    {
+        abort_unless($subject->feature_image && Storage::disk('local')->exists($subject->feature_image), 404);
+
+        $path = Storage::disk('local')->path($subject->feature_image);
+        $mime = mime_content_type($path) ?: 'image/jpeg';
+
+        return response()->file($path, [
+            'Content-Type'  => $mime,
+            'Cache-Control' => 'public, max-age=86400',
+        ]);
+    }
+
     public function file(Subject $subject, Topic $topic, Lesson $lesson): mixed
     {
         if (!$this->mode->isGeneric()) {

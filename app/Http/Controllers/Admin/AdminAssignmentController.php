@@ -7,6 +7,7 @@ use App\Models\Lesson;
 use App\Models\SchoolClass;
 use App\Models\Subject;
 use App\Models\Topic;
+use App\Support\InstallMode;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -65,9 +66,12 @@ class AdminAssignmentController extends Controller
 
     public function create(): View
     {
+        $isGeneric = app(InstallMode::class)->isGeneric();
+
         return view('admin.assignments.create', [
-            'classes' => SchoolClass::orderBy('name')->get(),
-            'lessons' => collect(),
+            'classes'  => $isGeneric ? collect() : SchoolClass::orderBy('name')->get(),
+            'subjects' => $isGeneric ? Subject::orderBy('name')->get() : collect(),
+            'lessons'  => collect(),
         ]);
     }
 
@@ -77,18 +81,20 @@ class AdminAssignmentController extends Controller
             'allow_late' => $request->boolean('allow_late') ? 1 : 0,
         ]);
 
+        $isGeneric = app(InstallMode::class)->isGeneric();
+
         $data = $request->validate([
-            'title' => 'required|string|max:191',
-            'school_class_id' => 'required|integer|exists:school_classes,id',
-            'subject_id' => 'required|integer|exists:subjects,id',
-            'topic_id' => 'required|integer|exists:topics,id',
-            'lesson_id' => 'required|integer|exists:lessons,id',
-            'description' => 'required|string',
-            'due_at' => 'required|date',
-            'max_points' => 'required|integer|min:1|max:1000',
-            'pass_mark' => 'required|integer|min:0|lte:max_points',
+            'title'           => 'required|string|max:191',
+            'school_class_id' => $isGeneric ? 'nullable|integer|exists:school_classes,id' : 'required|integer|exists:school_classes,id',
+            'subject_id'      => 'required|integer|exists:subjects,id',
+            'topic_id'        => 'required|integer|exists:topics,id',
+            'lesson_id'       => 'required|integer|exists:lessons,id',
+            'description'     => 'required|string',
+            'due_at'          => 'required|date',
+            'max_points'      => 'required|integer|min:1|max:1000',
+            'pass_mark'       => 'required|integer|min:0|lte:max_points',
             'retake_attempts' => 'required|integer|min:0|max:100',
-            'allow_late' => 'boolean',
+            'allow_late'      => 'boolean',
             'late_mark' => 'required_if:allow_late,1|nullable|integer|min:0|lte:max_points',
             'late_due_at' => 'required_if:allow_late,1|nullable|date|after:due_at',
         ]);
@@ -146,6 +152,7 @@ class AdminAssignmentController extends Controller
     public function edit(Assignment $assignment): View
     {
         $assignment->load('lesson.topic.subject');
+        $isGeneric = app(InstallMode::class)->isGeneric();
         $topicId = $assignment->lesson?->topic_id;
         $lessons = $topicId
             ? Lesson::query()
@@ -156,8 +163,9 @@ class AdminAssignmentController extends Controller
 
         return view('admin.assignments.edit', [
             'assignment' => $assignment,
-            'classes' => SchoolClass::orderBy('name')->get(),
-            'lessons' => $lessons,
+            'classes'    => $isGeneric ? collect() : SchoolClass::orderBy('name')->get(),
+            'subjects'   => $isGeneric ? Subject::orderBy('name')->get() : collect(),
+            'lessons'    => $lessons,
         ]);
     }
 
@@ -167,39 +175,53 @@ class AdminAssignmentController extends Controller
             'allow_late' => $request->boolean('allow_late') ? 1 : 0,
         ]);
 
+        $isGeneric = app(InstallMode::class)->isGeneric();
+
         $data = $request->validate([
-            'title' => 'required|string|max:191',
-            'school_class_id' => 'required|integer|exists:school_classes,id',
-            'subject_id' => 'required|integer|exists:subjects,id',
-            'topic_id' => 'required|integer|exists:topics,id',
-            'lesson_id' => 'required|integer|exists:lessons,id',
-            'description' => 'required|string',
-            'due_at' => 'required|date',
-            'max_points' => 'required|integer|min:1|max:1000',
-            'pass_mark' => 'required|integer|min:0|lte:max_points',
+            'title'           => 'required|string|max:191',
+            'school_class_id' => $isGeneric ? 'nullable|integer|exists:school_classes,id' : 'required|integer|exists:school_classes,id',
+            'subject_id'      => 'required|integer|exists:subjects,id',
+            'topic_id'        => 'required|integer|exists:topics,id',
+            'lesson_id'       => 'required|integer|exists:lessons,id',
+            'description'     => 'required|string',
+            'due_at'          => 'required|date',
+            'max_points'      => 'required|integer|min:1|max:1000',
+            'pass_mark'       => 'required|integer|min:0|lte:max_points',
             'retake_attempts' => 'required|integer|min:0|max:100',
-            'allow_late' => 'boolean',
-            'late_mark' => 'required_if:allow_late,1|nullable|integer|min:0|lte:max_points',
-            'late_due_at' => 'required_if:allow_late,1|nullable|date|after:due_at',
+            'allow_late'      => 'boolean',
+            'late_mark'       => 'required_if:allow_late,1|nullable|integer|min:0|lte:max_points',
+            'late_due_at'     => 'required_if:allow_late,1|nullable|date|after:due_at',
         ]);
 
-        $classSectionId = SchoolClass::whereKey($data['school_class_id'])->value('section_id');
-        $subjectSectionId = Subject::whereKey($data['subject_id'])->value('section_id');
-        if ($classSectionId && $subjectSectionId && $classSectionId !== $subjectSectionId) {
-            return back()->withErrors([
-                'subject_id' => 'The selected subject does not belong to the class section.',
-            ])->withInput();
-        }
+        if (!$isGeneric) {
+            $classSectionId   = SchoolClass::whereKey($data['school_class_id'])->value('section_id');
+            $subjectSectionId = Subject::whereKey($data['subject_id'])->value('section_id');
+            if ($classSectionId && $subjectSectionId && $classSectionId !== $subjectSectionId) {
+                return back()->withErrors([
+                    'subject_id' => 'The selected subject does not belong to the class section.',
+                ])->withInput();
+            }
 
-        $topicMatches = Topic::query()
-            ->whereKey($data['topic_id'])
-            ->where('subject_id', $data['subject_id'])
-            ->where('school_class_id', $data['school_class_id'])
-            ->exists();
-        if (!$topicMatches) {
-            return back()->withErrors([
-                'topic_id' => 'The selected topic does not belong to the subject and class.',
-            ])->withInput();
+            $topicMatches = Topic::query()
+                ->whereKey($data['topic_id'])
+                ->where('subject_id', $data['subject_id'])
+                ->where('school_class_id', $data['school_class_id'])
+                ->exists();
+            if (!$topicMatches) {
+                return back()->withErrors([
+                    'topic_id' => 'The selected topic does not belong to the subject and class.',
+                ])->withInput();
+            }
+        } else {
+            $topicMatches = Topic::query()
+                ->whereKey($data['topic_id'])
+                ->where('subject_id', $data['subject_id'])
+                ->exists();
+            if (!$topicMatches) {
+                return back()->withErrors([
+                    'topic_id' => 'The selected topic does not belong to the course.',
+                ])->withInput();
+            }
         }
 
         $lessonMatches = Lesson::query()
