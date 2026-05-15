@@ -441,3 +441,16 @@ Route::prefix('dashboard/teacher')
 Route::get('/dashboard/student', [StudentDashboardController::class, 'index'])
     ->middleware('role:student')
     ->name('dashboard.student');
+Route::middleware(['auth'])->prefix('usb')->name('usb.')->group(function () {
+    // Read-only listing of imported content (any authenticated user, incl. students)
+    Route::get('/list',     [\App\Http\Controllers\UsbImportController::class, 'index'])->name('list');
+
+    // Drive detection + progress polling (any authenticated user; admin/teacher
+    // dashboards consume this. Empty drive list is safe to expose.)
+    Route::get('/drives',   [\App\Http\Controllers\UsbImportController::class, 'drives'])->name('drives');
+    Route::get('/progress', [\App\Http\Controllers\UsbImportController::class, 'progress'])->name('progress');
+
+    // Write operations — controller enforces admin/teacher role
+    Route::post('/start',                  [\App\Http\Controllers\UsbImportController::class, 'start'])->name('start');
+    Route::delete('/content/{content}',    [\App\Http\Controllers\UsbImportController::class, 'destroy'])->name('destroy');
+});

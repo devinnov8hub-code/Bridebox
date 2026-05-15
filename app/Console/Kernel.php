@@ -13,6 +13,7 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
         \App\Console\Commands\DemoGenericSeedCommand::class,
+        \App\Console\Commands\RunUsbImportCommand::class,
     ];
 
     /**

@@ -184,5 +184,16 @@
                 </div>
             </div>
         </section>
+
+        {{-- ============================================================
+             USB CONTENT IMPORT — teacher view (compact "mini" variant).
+             Lecturers can copy USB content + see the imported library.
+             Placed below existing lanes so nothing visual is disturbed.
+             ============================================================ --}}
+        @include('partials.usb-import-panel', [
+            'variant' => 'teacher',
+            'showLibrary' => true,
+            'title' => __('USB Content Import'),
+        ])
     </main>
 @endsection
